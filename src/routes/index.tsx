@@ -1,21 +1,40 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { CloudLightning, Gauge, MapPin, Wind, Droplets, Clock, X } from "lucide-react";
-import { storms, type Storm } from "@/data/storms";
+import {
+  CloudLightning,
+  Crosshair,
+  Loader2,
+  RefreshCw,
+  Bell,
+  BellRing,
+  AlertTriangle,
+  Map as MapIcon,
+} from "lucide-react";
+import { stormsQueryOptions } from "@/lib/storm-queries";
+import { getLocalConditions } from "@/lib/storms.functions";
+import { approachToPoint, formatDateTime, type Storm } from "@/lib/storm-utils";
+import { StormCard } from "@/components/StormCard";
+import { StormSheet } from "@/components/StormSheet";
+import { BottomNav } from "@/components/BottomNav";
+import { useMyLocation } from "@/hooks/useMyLocation";
+import { useTrackedStorms } from "@/hooks/useTrackedStorms";
+import { useStormAlerts } from "@/hooks/useStormAlerts";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "StormWatch — Live Storm Tracker for iPhone" },
+      { title: "StormWatch — Live Storm Tracker & Alerts" },
       {
         name: "description",
         content:
-          "Track incoming storms in real time, see wind speed, pressure and ETA, and browse the history of storms that already passed.",
+          "Track live hurricanes and tropical storms from NOAA, see past storms with real dates and paths, and get alerted when a storm moves toward your area.",
       },
-      { property: "og:title", content: "StormWatch — Live Storm Tracker" },
+      { property: "og:title", content: "StormWatch — Live Storm Tracker & Alerts" },
       {
         property: "og:description",
-        content: "Follow incoming storms and review past storms on a clean, storm-blue mobile dashboard.",
+        content:
+          "Real-time NOAA storm positions, forecast paths and proximity alerts for your area.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -24,159 +43,193 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const severityLabel = ["", "Minor", "Moderate", "Strong", "Severe", "Extreme"];
-
-function SeverityBar({ level }: { level: number }) {
-  return (
-    <div className="flex gap-1">
-      {[1, 2, 3, 4, 5].map((i) => (
-        <span
-          key={i}
-          className={`h-1.5 w-5 rounded-full ${i <= level ? "bg-storm-gradient" : "bg-secondary"}`}
-        />
-      ))}
-    </div>
-  );
-}
-
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
-function StormCard({ storm, onOpen }: { storm: Storm; onOpen: (s: Storm) => void }) {
-  const incoming = storm.status === "incoming";
-  return (
-    <button
-      onClick={() => onOpen(storm)}
-      className="glass-card shadow-lift w-full rounded-3xl p-4 text-left transition-transform active:scale-[0.98]"
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-xs uppercase tracking-widest text-muted-foreground">{storm.category}</p>
-          <h3 className="mt-0.5 text-2xl font-semibold tracking-tight">{storm.name}</h3>
-        </div>
-        <div className="flex flex-col items-end">
-          <span className="text-3xl font-bold leading-none text-primary">{storm.windKph}</span>
-          <span className="text-[11px] text-muted-foreground">km/h gusts</span>
-        </div>
-      </div>
-
-      <div className="mt-3 flex items-center gap-1.5 text-sm text-muted-foreground">
-        <MapPin className="size-3.5" />
-        {storm.region}
-      </div>
-
-      <div className="mt-4 flex items-center justify-between">
-        <SeverityBar level={storm.severity} />
-        <span className="text-xs font-medium text-foreground/80">
-          {incoming ? (
-            <span className="flex items-center gap-1">
-              <Clock className="size-3.5 text-primary" />
-              in {storm.etaHours}h
-            </span>
-          ) : (
-            formatDate(storm.date)
-          )}
-        </span>
-      </div>
-    </button>
-  );
-}
-
-function StormSheet({ storm, onClose }: { storm: Storm; onClose: () => void }) {
-  const stats = [
-    { icon: Wind, label: "Wind gusts", value: `${storm.windKph} km/h` },
-    { icon: Gauge, label: "Pressure", value: `${storm.pressure} hPa` },
-    { icon: Droplets, label: "Rainfall", value: `${storm.rainMm} mm` },
-    {
-      icon: storm.status === "incoming" ? Clock : CloudLightning,
-      label: storm.status === "incoming" ? "Distance" : "Occurred",
-      value: storm.status === "incoming" ? `${storm.distanceKm} km` : formatDate(storm.date),
-    },
-  ];
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-sky-deep/70 backdrop-blur-sm">
-      <div className="w-full max-w-md rounded-t-[2rem] border-t border-border bg-card p-6 pb-10">
-        <div className="mx-auto mb-5 h-1.5 w-10 rounded-full bg-secondary" />
-        <div className="flex items-start justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-widest text-primary">
-              {severityLabel[storm.severity]} · {storm.category}
-            </p>
-            <h2 className="mt-1 text-3xl font-semibold tracking-tight">{storm.name}</h2>
-            <p className="mt-1 text-sm text-muted-foreground">{storm.region}</p>
-          </div>
-          <button
-            onClick={onClose}
-            aria-label="Close storm details"
-            className="rounded-full bg-secondary p-2 text-secondary-foreground"
-          >
-            <X className="size-4" />
-          </button>
-        </div>
-
-        <p className="mt-4 text-sm leading-relaxed text-foreground/85">{storm.summary}</p>
-
-        <div className="mt-5 grid grid-cols-2 gap-3">
-          {stats.map(({ icon: Icon, label, value }) => (
-            <div key={label} className="glass-card rounded-2xl p-3">
-              <Icon className="size-4 text-primary" />
-              <p className="mt-2 text-lg font-semibold">{value}</p>
-              <p className="text-[11px] text-muted-foreground">{label}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function Index() {
+  const { data, isLoading, isFetching, refetch, dataUpdatedAt } = useQuery(stormsQueryOptions);
+  const { location, status, locate } = useMyLocation();
+  const { tracked, toggle } = useTrackedStorms();
   const [tab, setTab] = useState<"incoming" | "past">("incoming");
-  const [selected, setSelected] = useState<Storm | null>(null);
+  const [sheet, setSheet] = useState<Storm | null>(null);
 
-  const list = useMemo(() => storms.filter((s) => s.status === tab), [tab]);
-  const next = storms.filter((s) => s.status === "incoming").sort((a, b) => a.etaHours - b.etaHours)[0];
+  const storms = data?.storms ?? [];
+  const { alerts, permission, requestPermission } = useStormAlerts(storms, location, tracked);
+
+  const local = useQuery({
+    queryKey: ["local-conditions", location?.lat, location?.lon],
+    queryFn: () => getLocalConditions({ data: location! }),
+    enabled: !!location,
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const incoming = useMemo(
+    () =>
+      storms
+        .filter((s) => s.active)
+        .sort((a, b) => {
+          if (!location) return b.windKt - a.windKt;
+          return approachToPoint(a, location).closestKm - approachToPoint(b, location).closestKm;
+        }),
+    [storms, location],
+  );
+  const past = useMemo(
+    () => storms.filter((s) => !s.active).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)),
+    [storms],
+  );
+
+  const list = tab === "incoming" ? incoming : past;
+  const nearest = location && incoming.length > 0 ? incoming[0]! : null;
+  const nearestApproach = nearest && location ? approachToPoint(nearest, location) : null;
 
   return (
     <main className="bg-sky-gradient min-h-screen text-foreground">
-      <div className="mx-auto max-w-md px-5 pb-16 pt-12">
-        <header className="flex items-center gap-2">
-          <div className="relative">
-            <span className="absolute inset-0 animate-storm-pulse rounded-full bg-primary/40" />
-            <CloudLightning className="relative size-6 text-primary" />
+      <div className="mx-auto max-w-md px-5 pb-32 pt-10">
+        <header className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <span className="absolute inset-0 animate-storm-pulse rounded-full bg-primary/40" />
+              <CloudLightning className="relative size-6 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-xl font-semibold tracking-tight">StormWatch</h1>
+              <p className="text-[11px] text-muted-foreground">
+                {isFetching ? "Updating…" : `Live · updated ${formatDateTime(new Date(dataUpdatedAt || Date.now()).toISOString())}`}
+              </p>
+            </div>
           </div>
-          <h1 className="text-xl font-semibold tracking-tight">StormWatch</h1>
+          <div className="flex gap-2">
+            <button
+              onClick={() => refetch()}
+              aria-label="Refresh storm data"
+              className="rounded-full bg-secondary p-2.5 text-secondary-foreground"
+            >
+              <RefreshCw className={`size-4 ${isFetching ? "animate-spin" : ""}`} />
+            </button>
+            <button
+              onClick={locate}
+              aria-label="Use my location"
+              className="rounded-full bg-secondary p-2.5 text-secondary-foreground"
+            >
+              {status === "locating" ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Crosshair className="size-4" />
+              )}
+            </button>
+          </div>
         </header>
 
-        {next && (
-          <section className="bg-storm-gradient shadow-lift mt-6 rounded-[1.75rem] p-5">
-            <p className="text-xs uppercase tracking-widest text-primary-foreground/70">Next storm</p>
+        {data?.error && (
+          <p className="mt-4 rounded-2xl bg-destructive/15 p-3 text-center text-sm text-destructive-foreground">
+            {data.error}
+          </p>
+        )}
+
+        {!location && (
+          <button
+            onClick={locate}
+            className="glass-card mt-5 flex w-full items-center gap-3 rounded-3xl p-4 text-left"
+          >
+            <Crosshair className="size-5 shrink-0 text-primary" />
+            <span className="text-sm">
+              <span className="font-semibold">Set your area</span>
+              <span className="block text-muted-foreground">
+                See how far each storm is and get alerts when one closes in.
+              </span>
+            </span>
+          </button>
+        )}
+
+        {status === "denied" && !location && (
+          <p className="mt-3 text-center text-xs text-muted-foreground">
+            Location access was blocked — enable it in your browser settings to get proximity alerts.
+          </p>
+        )}
+
+        {nearest && nearestApproach && (
+          <section className="bg-storm-gradient shadow-lift mt-5 rounded-[1.75rem] p-5 text-primary-foreground">
+            <p className="text-xs uppercase tracking-widest opacity-75">Closest to you</p>
             <div className="mt-1 flex items-end justify-between">
-              <h2 className="text-4xl font-bold tracking-tight text-primary-foreground">{next.name}</h2>
-              <span className="text-sm font-medium text-primary-foreground/80">ETA {next.etaHours}h</span>
+              <h2 className="text-4xl font-bold tracking-tight">{nearest.name}</h2>
+              <span className="text-sm font-medium opacity-85">
+                {nearestApproach.distanceKm.toLocaleString()} km
+              </span>
             </div>
-            <div className="mt-4 grid grid-cols-3 gap-2 text-primary-foreground">
+            <p className="mt-1 text-sm opacity-85">{nearest.category}</p>
+            <div className="mt-4 grid grid-cols-3 gap-2">
               <div>
-                <p className="text-xl font-semibold">{next.windKph}</p>
-                <p className="text-[11px] opacity-70">km/h</p>
+                <p className="text-xl font-semibold">{nearest.windKph}</p>
+                <p className="text-[11px] opacity-70">km/h winds</p>
               </div>
               <div>
-                <p className="text-xl font-semibold">{next.pressure}</p>
+                <p className="text-xl font-semibold">{nearest.pressure ?? "—"}</p>
                 <p className="text-[11px] opacity-70">hPa</p>
               </div>
               <div>
-                <p className="text-xl font-semibold">{next.distanceKm}</p>
-                <p className="text-[11px] opacity-70">km away</p>
+                <p className="text-xl font-semibold">
+                  {nearestApproach.closestKm.toLocaleString()}
+                </p>
+                <p className="text-[11px] opacity-70">km closest</p>
               </div>
             </div>
           </section>
+        )}
+
+        {local.data && !local.data.error && (
+          <div className="glass-card mt-4 flex items-center justify-between rounded-2xl p-4">
+            <div>
+              <p className="text-xs uppercase tracking-widest text-muted-foreground">
+                {local.data.place ?? "Your area"}
+              </p>
+              <p className="mt-0.5 text-sm font-medium">
+                {local.data.description ?? "Current conditions"}
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-xl font-semibold">
+                {local.data.temperatureC !== null ? `${Math.round(local.data.temperatureC)}°` : "—"}
+              </p>
+              <p className="text-[11px] text-muted-foreground">
+                wind {local.data.windKph !== null ? `${Math.round(local.data.windKph)} km/h` : "—"}
+              </p>
+            </div>
+          </div>
+        )}
+
+        <button
+          onClick={() => requestPermission()}
+          className="glass-card mt-4 flex w-full items-center gap-3 rounded-2xl p-4 text-left"
+        >
+          {permission === "granted" ? (
+            <BellRing className="size-5 shrink-0 text-primary" />
+          ) : (
+            <Bell className="size-5 shrink-0 text-primary" />
+          )}
+          <span className="text-sm">
+            <span className="font-semibold">
+              {permission === "granted" ? "Alerts are on" : "Turn on storm alerts"}
+            </span>
+            <span className="block text-muted-foreground">
+              {permission === "granted"
+                ? `${tracked.length} storm${tracked.length === 1 ? "" : "s"} tracked · alerts at 1500, 800, 400 and 150 km`
+                : "Get notified when a tracked storm closes in on your area."}
+            </span>
+          </span>
+        </button>
+
+        {alerts.length > 0 && (
+          <div className="mt-4 space-y-2">
+            {alerts.slice(0, 3).map((alert) => (
+              <div
+                key={alert.id}
+                className="flex items-start gap-2 rounded-2xl bg-destructive/15 p-3 text-sm"
+              >
+                <AlertTriangle className="mt-0.5 size-4 shrink-0 text-destructive" />
+                <div>
+                  <p className="font-semibold">{alert.title}</p>
+                  <p className="text-muted-foreground">{alert.body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
 
         <div className="glass-card mt-6 grid grid-cols-2 gap-1 rounded-full p-1">
@@ -184,23 +237,63 @@ function Index() {
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`rounded-full py-2 text-sm font-medium capitalize transition-colors ${
+              className={`rounded-full py-2 text-sm font-medium transition-colors ${
                 tab === t ? "bg-primary text-primary-foreground" : "text-muted-foreground"
               }`}
             >
-              {t === "incoming" ? "Incoming" : "Past storms"}
+              {t === "incoming" ? `Incoming (${incoming.length})` : `Past (${past.length})`}
             </button>
           ))}
         </div>
 
         <div className="mt-4 space-y-3">
-          {list.map((s) => (
-            <StormCard key={s.id} storm={s} onOpen={setSelected} />
+          {isLoading && (
+            <p className="glass-card rounded-2xl p-6 text-center text-sm text-muted-foreground">
+              Loading live storms from NOAA…
+            </p>
+          )}
+          {!isLoading && list.length === 0 && (
+            <p className="glass-card rounded-2xl p-6 text-center text-sm text-muted-foreground">
+              {tab === "incoming"
+                ? "No named storms are active right now."
+                : "No storms recorded for this season yet."}
+            </p>
+          )}
+          {list.map((storm) => (
+            <StormCard
+              key={storm.id}
+              storm={storm}
+              me={location}
+              tracked={tracked.includes(storm.id)}
+              onOpen={setSheet}
+              onTrack={toggle}
+            />
           ))}
         </div>
+
+        <Link
+          to="/map"
+          className="mt-6 flex items-center justify-center gap-2 rounded-full bg-secondary py-3 text-sm font-semibold text-secondary-foreground"
+        >
+          <MapIcon className="size-4" />
+          Open the storm map
+        </Link>
+
+        <p className="mt-4 text-center text-[11px] text-muted-foreground">
+          Source: NOAA National Hurricane Center best-track and advisory data.
+        </p>
       </div>
 
-      {selected && <StormSheet storm={selected} onClose={() => setSelected(null)} />}
+      {sheet && (
+        <StormSheet
+          storm={sheet}
+          me={location}
+          tracked={tracked.includes(sheet.id)}
+          onTrack={toggle}
+          onClose={() => setSheet(null)}
+        />
+      )}
+      <BottomNav />
     </main>
   );
 }
