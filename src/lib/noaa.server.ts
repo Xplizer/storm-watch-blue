@@ -95,7 +95,34 @@ function parseBestTrack(id: string, text: string): Storm | null {
     forecast: [],
     peakWindKt,
     movement: { dirDeg: null, speedKt: null },
+    advisory: null,
   };
+}
+
+/** Pull the headline and summary paragraph out of an NHC advisory product. */
+function parseAdvisoryText(text: string): { headline: string | null; summary: string | null } {
+  const clean = text.replace(/\r/g, "");
+  const headlineMatch = clean.match(/^\.\.\.(.+?)\.\.\.\s*$/m);
+  const headline = headlineMatch ? headlineMatch[1]!.replace(/\s+/g, " ").trim() : null;
+
+  let summary: string | null = null;
+  const summaryStart = clean.search(/SUMMARY OF .*INFORMATION/);
+  if (summaryStart >= 0) {
+    const block = clean.slice(summaryStart);
+    const lines = block
+      .split("\n")
+      .slice(1)
+      .map((l) => l.trim())
+      .filter((l) => l && !/^-+$/.test(l));
+    const picked: string[] = [];
+    for (const line of lines) {
+      if (/^(FORECAST|OUTLOOK|REPEAT|\$\$)/.test(line)) break;
+      picked.push(line);
+      if (picked.length >= 8) break;
+    }
+    if (picked.length) summary = picked.join(" · ");
+  }
+  return { headline, summary };
 }
 
 /** Pull forecast positions out of an NHC forecast advisory text product. */
@@ -178,11 +205,19 @@ export async function loadStorms(): Promise<Storm[]> {
       storm.movement = { dirDeg: info.movementDir, speedKt: info.movementSpeed };
       if (!info.forecastAdvisoryUrl) return;
       try {
-        const text = await getText(info.forecastAdvisoryUrl);
+        const raw = await getText(info.forecastAdvisoryUrl);
+        const text = raw.replace(/<[^>]+>/g, " ");
         storm.forecast = parseForecastAdvisory(
-          text.replace(/<[^>]+>/g, " "),
+          text,
           new Date(info.lastUpdate ?? Date.now()),
         );
+        const { headline, summary } = parseAdvisoryText(text);
+        storm.advisory = {
+          url: info.forecastAdvisoryUrl,
+          issuedAt: info.lastUpdate,
+          headline,
+          summary,
+        };
       } catch {
         /* forecast is optional */
       }

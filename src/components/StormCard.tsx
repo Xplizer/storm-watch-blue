@@ -2,22 +2,10 @@ import { MapPin, Clock, Star } from "lucide-react";
 import {
   approachToPoint,
   formatDate,
-  severity,
   type Storm,
 } from "@/lib/storm-utils";
-
-export function SeverityBar({ level }: { level: number }) {
-  return (
-    <div className="flex gap-1">
-      {[1, 2, 3, 4, 5].map((i) => (
-        <span
-          key={i}
-          className={`h-1.5 w-5 rounded-full ${i <= level ? "bg-storm-gradient" : "bg-secondary"}`}
-        />
-      ))}
-    </div>
-  );
-}
+import { bandFor } from "@/lib/storm-severity";
+import { BandBadge, SeverityScale } from "./SeverityBand";
 
 export function StormCard({
   storm,
@@ -33,19 +21,26 @@ export function StormCard({
   onTrack: (id: string) => void;
 }) {
   const approach = me ? approachToPoint(storm, me) : null;
+  const band = bandFor(storm);
 
   return (
-    <div className="glass-card shadow-lift rounded-3xl p-4">
+    <div className="glass-card shadow-lift relative overflow-hidden rounded-3xl p-4">
+      <span
+        className="absolute inset-y-0 left-0 w-1.5"
+        style={{ backgroundColor: band.cssVar }}
+        aria-hidden
+      />
       <button onClick={() => onOpen(storm)} className="w-full text-left">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-xs uppercase tracking-widest text-muted-foreground">
-              {storm.category}
-            </p>
-            <h3 className="mt-0.5 text-2xl font-semibold tracking-tight">{storm.name}</h3>
+            <BandBadge band={band} />
+            <h3 className="mt-1.5 text-2xl font-semibold tracking-tight">{storm.name}</h3>
+            <p className="text-xs text-muted-foreground">{storm.category}</p>
           </div>
           <div className="flex flex-col items-end">
-            <span className="text-3xl font-bold leading-none text-primary">{storm.windKph}</span>
+            <span className="text-3xl font-bold leading-none" style={{ color: band.cssVar }}>
+              {storm.windKph}
+            </span>
             <span className="text-[11px] text-muted-foreground">km/h winds</span>
           </div>
         </div>
@@ -56,8 +51,10 @@ export function StormCard({
           {Math.abs(storm.lon).toFixed(1)}°{storm.lon >= 0 ? "E" : "W"}
         </div>
 
-        <div className="mt-4 flex items-center justify-between">
-          <SeverityBar level={severity(storm.windKt)} />
+        <div className="mt-4 flex items-center gap-3">
+          <div className="flex-1">
+            <SeverityScale storm={storm} />
+          </div>
           <span className="flex items-center gap-1 text-xs font-medium text-foreground/80">
             {storm.active ? (
               <>

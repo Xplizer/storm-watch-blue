@@ -1,4 +1,5 @@
-import { X, Wind, Gauge, Navigation, CalendarDays, Star } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { X, Wind, Gauge, Navigation, CalendarDays, Star, FileText, Thermometer } from "lucide-react";
 import {
   approachToPoint,
   compass,
@@ -6,10 +7,11 @@ import {
   formatDate,
   formatDateTime,
   ktToKph,
-  severity,
   type Storm,
 } from "@/lib/storm-utils";
-import { SeverityBar } from "./StormCard";
+import { bandFor } from "@/lib/storm-severity";
+import { getLocalConditions } from "@/lib/storms.functions";
+import { BandBadge, SeverityScale } from "./SeverityBand";
 
 export function StormSheet({
   storm,
@@ -25,6 +27,15 @@ export function StormSheet({
   onClose: () => void;
 }) {
   const approach = me ? approachToPoint(storm, me) : null;
+  const band = bandFor(storm);
+
+  const conditions = useQuery({
+    queryKey: ["storm-conditions", storm.id, storm.lat, storm.lon],
+    queryFn: () => getLocalConditions({ data: { lat: storm.lat, lon: storm.lon } }),
+    enabled: storm.active,
+    staleTime: 10 * 60 * 1000,
+  });
+
   const stats = [
     { icon: Wind, label: "Current winds", value: `${storm.windKph} km/h` },
     { icon: Gauge, label: "Pressure", value: storm.pressure ? `${storm.pressure} hPa` : "—" },
@@ -50,11 +61,11 @@ export function StormSheet({
         <div className="mx-auto mb-5 h-1.5 w-10 rounded-full bg-secondary" />
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-xs uppercase tracking-widest text-primary">
-              {storm.active ? "Active" : "Ended"} · {storm.basinName}
+            <BandBadge band={band} />
+            <h2 className="mt-1.5 text-3xl font-semibold tracking-tight">{storm.name}</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {storm.category} · {storm.active ? "Active" : "Ended"} · {storm.basinName}
             </p>
-            <h2 className="mt-1 text-3xl font-semibold tracking-tight">{storm.name}</h2>
-            <p className="mt-1 text-sm text-muted-foreground">{storm.category}</p>
           </div>
           <button
             onClick={onClose}
@@ -66,7 +77,7 @@ export function StormSheet({
         </div>
 
         <div className="mt-4">
-          <SeverityBar level={severity(storm.windKt)} />
+          <SeverityScale storm={storm} />
         </div>
 
         <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
@@ -100,6 +111,80 @@ export function StormSheet({
             </div>
           ))}
         </div>
+
+        {storm.active && (
+          <>
+            <h3 className="mt-6 text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+              Conditions at the storm
+            </h3>
+            <div className="glass-card mt-3 flex items-center justify-between rounded-2xl p-4">
+              {conditions.isLoading ? (
+                <p className="text-sm text-muted-foreground">Checking conditions…</p>
+              ) : conditions.data && !conditions.data.error ? (
+                <>
+                  <div>
+                    <p className="text-sm font-medium">
+                      {conditions.data.description ?? "Current conditions"}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground">
+                      {conditions.data.place ?? coordLabel(storm.lat, storm.lon)}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="flex items-center gap-1 text-xl font-semibold">
+                      <Thermometer className="size-4 text-primary" />
+                      {conditions.data.temperatureC !== null
+                        ? `${Math.round(conditions.data.temperatureC)}°`
+                        : "—"}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground">
+                      gusts{" "}
+                      {conditions.data.gustKph !== null
+                        ? `${Math.round(conditions.data.gustKph)} km/h`
+                        : "—"}
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  Live conditions for this position are unavailable.
+                </p>
+              )}
+            </div>
+          </>
+        )}
+
+        {storm.advisory && (
+          <>
+            <h3 className="mt-6 text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+              Latest advisory
+            </h3>
+            <div className="glass-card mt-3 rounded-2xl p-4">
+              {storm.advisory.headline && (
+                <p className="text-sm font-semibold">{storm.advisory.headline}</p>
+              )}
+              {storm.advisory.summary && (
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  {storm.advisory.summary}
+                </p>
+              )}
+              {storm.advisory.issuedAt && (
+                <p className="mt-2 text-[11px] text-muted-foreground">
+                  Issued {formatDateTime(storm.advisory.issuedAt)} by the National Hurricane Center
+                </p>
+              )}
+              <a
+                href={storm.advisory.url}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-primary"
+              >
+                <FileText className="size-3.5" />
+                Read the full advisory
+              </a>
+            </div>
+          </>
+        )}
 
         <h3 className="mt-6 text-sm font-semibold uppercase tracking-widest text-muted-foreground">
           Path so far

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { Storm } from "@/lib/storm-utils";
 import { severity } from "@/lib/storm-utils";
+import { bandFor } from "@/lib/storm-severity";
 
 declare global {
   interface Window {
@@ -31,18 +32,18 @@ function loadMaps(): Promise<void> {
   return loader;
 }
 
-const TRACK_COLORS = ["#7fd3f7", "#4fb8f0", "#3b8ee6", "#3f6fe0", "#5b4fe0"];
-
 export function StormMap({
   storms,
   me,
   selectedId,
   onSelect,
+  onOpen,
 }: {
   storms: Storm[];
   me: { lat: number; lon: number } | null;
   selectedId: string | null;
   onSelect: (id: string) => void;
+  onOpen?: (storm: Storm) => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
@@ -88,8 +89,8 @@ export function StormMap({
     const bounds = new g.LatLngBounds();
     let hasBounds = false;
 
-    storms.forEach((storm, i) => {
-      const color = TRACK_COLORS[i % TRACK_COLORS.length]!;
+    storms.forEach((storm) => {
+      const color = bandFor(storm).hex;
       const dim = selectedId !== null && selectedId !== storm.id;
       const path = storm.track.map((p) => ({ lat: p.lat, lng: p.lon }));
       if (path.length > 1) {
@@ -138,7 +139,10 @@ export function StormMap({
           strokeWeight: storm.active ? 2 : 0.5,
         },
       });
-      marker.addListener("click", () => onSelect(storm.id));
+      marker.addListener("click", () => {
+        onSelect(storm.id);
+        onOpen?.(storm);
+      });
       overlaysRef.current.push(marker);
 
       path.forEach((p) => {
@@ -173,7 +177,7 @@ export function StormMap({
     } else if (hasBounds) {
       map.fitBounds(bounds, 40);
     }
-  }, [storms, me, selectedId, onSelect]);
+  }, [storms, me, selectedId, onSelect, onOpen]);
 
   if (error) {
     return (
