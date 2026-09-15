@@ -9,7 +9,9 @@ import { StormSheet } from "@/components/StormSheet";
 import { BottomNav } from "@/components/BottomNav";
 import { useMyLocation } from "@/hooks/useMyLocation";
 import { useTrackedStorms } from "@/hooks/useTrackedStorms";
-import { severity, type Storm } from "@/lib/storm-utils";
+import { type Storm } from "@/lib/storm-utils";
+import { bandFor } from "@/lib/storm-severity";
+import { BandLegend } from "@/components/SeverityBand";
 
 export const Route = createFileRoute("/map")({
   head: () => ({
@@ -84,24 +86,34 @@ function MapPage() {
                 me={location}
                 selectedId={selectedId}
                 onSelect={setSelectedId}
+                onOpen={setSheet}
               />
             </ClientOnly>
           )}
+        </div>
+
+        <div className="mt-3">
+          <BandLegend />
         </div>
 
         <div className="mt-4 space-y-2">
           {active.map((storm) => (
             <button
               key={storm.id}
-              onClick={() => (selectedId === storm.id ? setSheet(storm) : setSelectedId(storm.id))}
-              className={`flex w-full items-center justify-between rounded-2xl px-4 py-3 text-left transition-colors ${
+              onClick={() => setSheet(storm)}
+              className={`relative flex w-full items-center justify-between overflow-hidden rounded-2xl px-4 py-3 text-left transition-colors ${
                 selectedId === storm.id ? "bg-primary text-primary-foreground" : "glass-card"
               }`}
             >
-              <div>
+              <span
+                className="absolute inset-y-0 left-0 w-1.5"
+                style={{ backgroundColor: bandFor(storm).cssVar }}
+                aria-hidden
+              />
+              <div className="pl-2">
                 <p className="text-sm font-semibold">{storm.name}</p>
                 <p className="text-[11px] opacity-75">
-                  {storm.category} · {storm.basinName}
+                  {bandFor(storm).label} · {storm.basinName}
                 </p>
               </div>
               <span className="text-sm font-bold">
@@ -116,14 +128,13 @@ function MapPage() {
           )}
           {selected && (
             <p className="pt-1 text-center text-[11px] text-muted-foreground">
-              Tap {selected.name} again for full details
+              {selected.name} is highlighted on the map — tap it for the full advisory
             </p>
           )}
         </div>
 
         <p className="mt-6 text-center text-[11px] text-muted-foreground">
-          Live data: NOAA National Hurricane Center · severity {severity(active[0]?.windKt ?? 0)}/5
-          scale
+          Live data: NOAA National Hurricane Center · colours show storm severity
         </p>
       </div>
 
