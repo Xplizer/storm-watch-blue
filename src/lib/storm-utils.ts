@@ -32,6 +32,14 @@ export type Storm = {
   forecast: ForecastPoint[];
   peakWindKt: number;
   movement: { dirDeg: number | null; speedKt: number | null };
+  advisory: StormAdvisory | null;
+};
+
+export type StormAdvisory = {
+  url: string;
+  issuedAt: string | null;
+  headline: string | null;
+  summary: string | null;
 };
 
 export const BASIN_NAMES: Record<string, string> = {
