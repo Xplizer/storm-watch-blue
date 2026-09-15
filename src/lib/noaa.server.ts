@@ -205,11 +205,19 @@ export async function loadStorms(): Promise<Storm[]> {
       storm.movement = { dirDeg: info.movementDir, speedKt: info.movementSpeed };
       if (!info.forecastAdvisoryUrl) return;
       try {
-        const text = await getText(info.forecastAdvisoryUrl);
+        const raw = await getText(info.forecastAdvisoryUrl);
+        const text = raw.replace(/<[^>]+>/g, " ");
         storm.forecast = parseForecastAdvisory(
-          text.replace(/<[^>]+>/g, " "),
+          text,
           new Date(info.lastUpdate ?? Date.now()),
         );
+        const { headline, summary } = parseAdvisoryText(text);
+        storm.advisory = {
+          url: info.forecastAdvisoryUrl,
+          issuedAt: info.lastUpdate,
+          headline,
+          summary,
+        };
       } catch {
         /* forecast is optional */
       }
