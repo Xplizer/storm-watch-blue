@@ -14,13 +14,14 @@ export type ForecastPoint = {
 };
 
 export type Storm = {
-  id: string; // e.g. al052026
+  id: string;
   name: string;
-  basin: string; // AL / EP / CP
+  basin: string;
   basinName: string;
   active: boolean;
+  phase: "upcoming" | "active" | "passed";
   status: string;
-  category: string; // human label
+  category: string;
   windKt: number;
   windKph: number;
   pressure: number | null;
@@ -33,6 +34,10 @@ export type Storm = {
   peakWindKt: number;
   movement: { dirDeg: number | null; speedKt: number | null };
   advisory: StormAdvisory | null;
+  affectedAreas: string;
+  affectedRadiusKm: number;
+  simulated: boolean;
+  sourceLabel: string | null;
 };
 
 export type StormAdvisory = {
@@ -52,20 +57,18 @@ export function ktToKph(kt: number) {
   return Math.round(kt * 1.852);
 }
 
+export function ktToMs(kt: number) {
+  return Math.round(kt * 0.514444);
+}
+
 export function classify(status: string, windKt: number): string {
-  if (status === "HU" || windKt >= 64) {
-    if (windKt >= 137) return "Category 5 Hurricane";
-    if (windKt >= 113) return "Category 4 Hurricane";
-    if (windKt >= 96) return "Category 3 Hurricane";
-    if (windKt >= 83) return "Category 2 Hurricane";
-    return "Category 1 Hurricane";
-  }
-  if (status === "TS" || windKt >= 34) return "Tropical Storm";
-  if (status === "TD") return "Tropical Depression";
-  if (status === "EX") return "Post-Tropical Cyclone";
-  if (status === "SD" || status === "SS") return "Subtropical Cyclone";
-  if (status === "PT") return "Post-Tropical Remnant";
-  return "Tropical Disturbance";
+  const ms = windKt * 0.514444;
+  if (status === "ENDED") return "Passed storm";
+  if (ms >= 32.7) return "Hurricane-force storm";
+  if (ms >= 28.5) return "Violent storm";
+  if (ms >= 24.5) return "Storm";
+  if (ms >= 17.2) return "Gale";
+  return "Strong wind";
 }
 
 /** 1-5 visual severity from sustained wind (knots). */

@@ -8,14 +8,14 @@ export const getStorms = createServerFn({ method: "GET" }).handler(async (): Pro
   error: string | null;
 }> => {
   try {
-    const { loadStorms } = await import("./noaa.server");
-    return { storms: await loadStorms(), fetchedAt: new Date().toISOString(), error: null };
+    const { loadDenmarkStorms } = await import("./denmark-storms.server");
+    return { storms: await loadDenmarkStorms(), fetchedAt: new Date().toISOString(), error: null };
   } catch (err) {
-    console.error("NOAA storm fetch failed", err);
+    console.error("Denmark storm data failed", err);
     return {
       storms: [],
       fetchedAt: new Date().toISOString(),
-      error: "Live storm data from NOAA is temporarily unavailable.",
+      error: "Storm data is temporarily unavailable.",
     };
   }
 });
