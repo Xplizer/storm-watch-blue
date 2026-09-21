@@ -8,3 +8,5 @@
 - [ ] Incoming & Past tabs backed by real storms (dates, locations, paths)
 - [ ] Live tracker: auto-refresh positions, proximity alerts to my area
 - [ ] Push notifications: register device, store subscriptions, cron check endpoint
+
+- [x] Remove the rejected per-storm provenance and duplicated notice requirement from the plan.
