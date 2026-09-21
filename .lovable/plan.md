@@ -6,7 +6,6 @@ Transform the current storm tracker into a Denmark-focused school demonstration 
 ## Changes
 - Replace the US hurricane feed shown in the app with a Denmark dataset containing clearly sourced real historical storms and a stable set of fictional demonstration storms.
 - Include upcoming, active, and passed examples across Lillebælt, Aarhus, Aalborg, Esbjerg, Odense, Copenhagen, Western Jutland/North Sea, and Zealand.
-- Add explicit data provenance to every storm: **REAL DATA** or **FICTIONAL / DEMO**. Place a persistent project-demo notice on both tracker and map screens.
 - Adapt storm terminology and severity bands to Danish wind conditions, displaying wind in m/s as the primary unit.
 - Recenter and frame the map around Denmark. Draw storm paths and affected-area circles, with solid styling for real data and clearly differentiated dashed styling for fictional data.
 - Update the storm details panel with status, Danish location, arrival/passed time, direction, affected areas, data source, and an unambiguous warning that fictional entries are not official warnings.

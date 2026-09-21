@@ -9,4 +9,4 @@
 - [ ] Live tracker: auto-refresh positions, proximity alerts to my area
 - [ ] Push notifications: register device, store subscriptions, cron check endpoint
 
-- [ ] Remove the rejected per-storm provenance and duplicated notice requirement from the plan.
+- [x] Remove the rejected per-storm provenance and duplicated notice requirement from the plan.
