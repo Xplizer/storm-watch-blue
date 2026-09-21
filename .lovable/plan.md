@@ -16,9 +16,9 @@ Transform the current storm tracker into a Denmark-focused school demonstration 
 ## Data integrity
 - Real entries will only contain conservative facts supported by reliable sources; unavailable values will remain unspecified rather than invented.
 - Fictional and real entries will use the same presentation, without individual provenance labels.
-- One project-wide disclaimer will state that some storms are fictional and the app is not an official warning service.
+- A brief “Simulation” label will prevent fictional weather from being mistaken for official information.
 
 ## Validation
 - Check the project for remaining Journal or US/NOAA-facing copy.
-- Verify the tracker and map at mobile and desktop sizes, including map selection and storm details.
+- Verify the tracker and map in the mobile layout, including map selection and storm details.
 - Confirm the preview builds without errors.
