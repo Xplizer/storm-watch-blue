@@ -11,4 +11,4 @@
 
 - [x] Remove the rejected per-storm provenance and duplicated notice requirement from the plan.
 - [x] Use one consistent storm style without per-event real/fictional labels; retain one project-wide demo disclaimer.
-- [ ] Validate only the mobile layout; retain minimum truthful simulation labeling for fictional weather.
+- [x] Validate only the mobile layout; retain minimum truthful simulation labeling for fictional weather.
