@@ -10,3 +10,4 @@
 - [ ] Push notifications: register device, store subscriptions, cron check endpoint
 
 - [x] Remove the rejected per-storm provenance and duplicated notice requirement from the plan.
+- [x] Use one consistent storm style without per-event real/fictional labels; retain one project-wide demo disclaimer.
