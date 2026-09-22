@@ -61,6 +61,12 @@ export function ktToMs(kt: number) {
   return Math.round(kt * 0.514444);
 }
 
+export function phaseLabel(phase: Storm["phase"]) {
+  if (phase === "upcoming") return "Upcoming";
+  if (phase === "active") return "Active";
+  return "Passed";
+}
+
 export function classify(status: string, windKt: number): string {
   const ms = windKt * 0.514444;
   if (status === "ENDED") return "Passed storm";
