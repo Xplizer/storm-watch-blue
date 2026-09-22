@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { CloudLightning, Map, NotebookPen } from "lucide-react";
+import { CloudLightning, Map } from "lucide-react";
 
 export function BottomNav() {
   const base =
@@ -25,15 +25,6 @@ export function BottomNav() {
         >
           <Map className="size-5" />
           Map
-        </Link>
-        <Link
-          to="/journal"
-          className={base}
-          activeProps={{ className: `${base} bg-primary text-primary-foreground` }}
-          inactiveProps={{ className: `${base} text-muted-foreground` }}
-        >
-          <NotebookPen className="size-5" />
-          Journal
         </Link>
       </div>
     </nav>
