@@ -82,6 +82,7 @@ function parseBestTrack(id: string, text: string): Storm | null {
     basin,
     basinName: BASIN_NAMES[basin] ?? basin,
     active: false,
+    phase: "passed",
     status: last.status,
     category: classify(last.status, last.windKt),
     windKt: last.windKt,
@@ -96,6 +97,10 @@ function parseBestTrack(id: string, text: string): Storm | null {
     peakWindKt,
     movement: { dirDeg: null, speedKt: null },
     advisory: null,
+    affectedAreas: BASIN_NAMES[basin] ?? basin,
+    affectedRadiusKm: 100,
+    simulated: false,
+    sourceLabel: "NOAA best-track archive",
   };
 }
 
