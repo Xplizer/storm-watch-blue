@@ -41,7 +41,7 @@ function storm(input: {
     pressure: last.pressure,
     lat: last.lat,
     lon: last.lon,
-    startedAt: track[0].time,
+    startedAt: track[0]!.time,
     updatedAt: last.time,
     track,
     forecast: (input.forecast ?? []).map(([time, lat, lon]) => ({ time, lat, lon })),
