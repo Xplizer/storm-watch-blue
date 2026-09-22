@@ -16,12 +16,11 @@ export function BandBadge({ band, className = "" }: { band: Band; className?: st
 /** Colour band showing where this storm sits on the severity scale. */
 export function SeverityScale({ storm }: { storm: Storm }) {
   const current = bandFor(storm);
-  const scale = BAND_ORDER.filter((k) => k !== "post");
   return (
     <div className="flex gap-1">
-      {scale.map((key) => {
+      {BAND_ORDER.map((key) => {
         const b = BANDS[key];
-        const on = current.key === "post" ? false : scale.indexOf(current.key) >= scale.indexOf(key);
+        const on = BAND_ORDER.indexOf(current.key) >= BAND_ORDER.indexOf(key);
         return (
           <span
             key={key}

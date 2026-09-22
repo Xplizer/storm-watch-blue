@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { X, Wind, Gauge, Navigation, CalendarDays, Star, FileText, Thermometer } from "lucide-react";
+import { X, Wind, Gauge, Navigation, CalendarDays, Star, Thermometer, MapPin } from "lucide-react";
 import {
   approachToPoint,
   compass,
@@ -7,6 +7,8 @@ import {
   formatDate,
   formatDateTime,
   ktToKph,
+  ktToMs,
+  phaseLabel,
   type Storm,
 } from "@/lib/storm-utils";
 import { bandFor } from "@/lib/storm-severity";
@@ -37,16 +39,16 @@ export function StormSheet({
   });
 
   const stats = [
-    { icon: Wind, label: "Current winds", value: `${storm.windKph} km/h` },
+    { icon: Wind, label: "Wind", value: `${ktToMs(storm.windKt)} m/s` },
     { icon: Gauge, label: "Pressure", value: storm.pressure ? `${storm.pressure} hPa` : "—" },
     {
       icon: Navigation,
       label: "Moving",
       value: storm.movement.speedKt
         ? `${compass(storm.movement.dirDeg)} ${ktToKph(storm.movement.speedKt)} km/h`
-        : "—",
+        : compass(storm.movement.dirDeg),
     },
-    { icon: Wind, label: "Peak winds", value: `${ktToKph(storm.peakWindKt)} km/h` },
+    { icon: Wind, label: "Peak wind", value: `${ktToMs(storm.peakWindKt)} m/s` },
   ];
 
   return (
@@ -61,10 +63,15 @@ export function StormSheet({
         <div className="mx-auto mb-5 h-1.5 w-10 rounded-full bg-secondary" />
         <div className="flex items-start justify-between gap-3">
           <div>
-            <BandBadge band={band} />
+            <div className="flex flex-wrap items-center gap-1.5">
+              <BandBadge band={band} />
+              <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-secondary-foreground">
+                {phaseLabel(storm.phase)}
+              </span>
+            </div>
             <h2 className="mt-1.5 text-3xl font-semibold tracking-tight">{storm.name}</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              {storm.category} · {storm.active ? "Active" : "Ended"} · {storm.basinName}
+              {storm.category} · {storm.basinName}
             </p>
           </div>
           <button
@@ -82,12 +89,21 @@ export function StormSheet({
 
         <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
           <CalendarDays className="size-4" />
-          {formatDate(storm.startedAt)} – {formatDate(storm.updatedAt)}
+          {storm.phase === "upcoming"
+            ? `Expected ${formatDateTime(storm.startedAt)}`
+            : storm.phase === "active"
+              ? `Ongoing since ${formatDateTime(storm.startedAt)}`
+              : `${formatDate(storm.startedAt)} – ${formatDate(storm.updatedAt)}`}
         </div>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Last position {coordLabel(storm.lat, storm.lon)} · updated{" "}
-          {formatDateTime(storm.updatedAt)}
+        <p className="mt-2 flex items-start gap-2 text-sm text-muted-foreground">
+          <MapPin className="mt-0.5 size-4 shrink-0" />
+          {storm.affectedAreas} · {coordLabel(storm.lat, storm.lon)}
         </p>
+        {storm.sourceLabel ? (
+          <p className="mt-1 text-[11px] text-muted-foreground">Source: {storm.sourceLabel}</p>
+        ) : (
+          <p className="mt-1 text-[11px] text-muted-foreground">Simulation</p>
+        )}
 
         {approach && (
           <div className="bg-storm-gradient mt-4 rounded-2xl p-4 text-primary-foreground">
@@ -154,38 +170,6 @@ export function StormSheet({
           </>
         )}
 
-        {storm.advisory && (
-          <>
-            <h3 className="mt-6 text-sm font-semibold uppercase tracking-widest text-muted-foreground">
-              Latest advisory
-            </h3>
-            <div className="glass-card mt-3 rounded-2xl p-4">
-              {storm.advisory.headline && (
-                <p className="text-sm font-semibold">{storm.advisory.headline}</p>
-              )}
-              {storm.advisory.summary && (
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  {storm.advisory.summary}
-                </p>
-              )}
-              {storm.advisory.issuedAt && (
-                <p className="mt-2 text-[11px] text-muted-foreground">
-                  Issued {formatDateTime(storm.advisory.issuedAt)} by the National Hurricane Center
-                </p>
-              )}
-              <a
-                href={storm.advisory.url}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-primary"
-              >
-                <FileText className="size-3.5" />
-                Read the full advisory
-              </a>
-            </div>
-          </>
-        )}
-
         <h3 className="mt-6 text-sm font-semibold uppercase tracking-widest text-muted-foreground">
           Path so far
         </h3>
@@ -197,11 +181,27 @@ export function StormSheet({
               <li key={p.time} className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">{formatDateTime(p.time)}</span>
                 <span className="font-medium">
-                  {coordLabel(p.lat, p.lon)} · {ktToKph(p.windKt)} km/h
+                  {coordLabel(p.lat, p.lon)} · {ktToMs(p.windKt)} m/s
                 </span>
               </li>
             ))}
         </ol>
+
+        {storm.forecast.length > 0 && (
+          <>
+            <h3 className="mt-6 text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+              Expected path
+            </h3>
+            <ol className="mt-3 space-y-2">
+              {storm.forecast.map((p) => (
+                <li key={p.time} className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">{formatDateTime(p.time)}</span>
+                  <span className="font-medium">{coordLabel(p.lat, p.lon)}</span>
+                </li>
+              ))}
+            </ol>
+          </>
+        )}
 
         {storm.active && (
           <button

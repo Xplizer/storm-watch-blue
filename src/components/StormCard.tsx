@@ -2,6 +2,9 @@ import { MapPin, Clock, Star } from "lucide-react";
 import {
   approachToPoint,
   formatDate,
+  formatDateTime,
+  ktToMs,
+  phaseLabel,
   type Storm,
 } from "@/lib/storm-utils";
 import { bandFor } from "@/lib/storm-severity";
@@ -33,36 +36,43 @@ export function StormCard({
       <button onClick={() => onOpen(storm)} className="w-full text-left">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <BandBadge band={band} />
+            <div className="flex flex-wrap items-center gap-1.5">
+              <BandBadge band={band} />
+              <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-secondary-foreground">
+                {phaseLabel(storm.phase)}
+              </span>
+            </div>
             <h3 className="mt-1.5 text-2xl font-semibold tracking-tight">{storm.name}</h3>
             <p className="text-xs text-muted-foreground">{storm.category}</p>
           </div>
           <div className="flex flex-col items-end">
             <span className="text-3xl font-bold leading-none" style={{ color: band.cssVar }}>
-              {storm.windKph}
+              {ktToMs(storm.windKt)}
             </span>
-            <span className="text-[11px] text-muted-foreground">km/h winds</span>
+            <span className="text-[11px] text-muted-foreground">m/s winds</span>
           </div>
         </div>
 
         <div className="mt-3 flex items-center gap-1.5 text-sm text-muted-foreground">
           <MapPin className="size-3.5 shrink-0" />
-          {storm.basinName} · {Math.abs(storm.lat).toFixed(1)}°{storm.lat >= 0 ? "N" : "S"}{" "}
-          {Math.abs(storm.lon).toFixed(1)}°{storm.lon >= 0 ? "E" : "W"}
+          {storm.basinName}
         </div>
+        <p className="mt-1 text-xs text-muted-foreground">Affected: {storm.affectedAreas}</p>
 
         <div className="mt-4 flex items-center gap-3">
           <div className="flex-1">
             <SeverityScale storm={storm} />
           </div>
           <span className="flex items-center gap-1 text-xs font-medium text-foreground/80">
-            {storm.active ? (
+            {storm.phase === "passed" ? (
+              formatDate(storm.updatedAt)
+            ) : (
               <>
                 <Clock className="size-3.5 text-primary" />
-                {approach ? `${approach.distanceKm.toLocaleString()} km away` : "Live"}
+                {approach
+                  ? `${approach.distanceKm.toLocaleString()} km away`
+                  : formatDateTime(storm.phase === "upcoming" ? storm.startedAt : storm.updatedAt)}
               </>
-            ) : (
-              formatDate(storm.updatedAt)
             )}
           </span>
         </div>
