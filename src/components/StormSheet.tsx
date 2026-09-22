@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { X, Wind, Gauge, Navigation, CalendarDays, Star, FileText, Thermometer } from "lucide-react";
+import { X, Wind, Gauge, Navigation, CalendarDays, Star, Thermometer, MapPin } from "lucide-react";
 import {
   approachToPoint,
   compass,
@@ -7,6 +7,8 @@ import {
   formatDate,
   formatDateTime,
   ktToKph,
+  ktToMs,
+  phaseLabel,
   type Storm,
 } from "@/lib/storm-utils";
 import { bandFor } from "@/lib/storm-severity";
@@ -37,16 +39,16 @@ export function StormSheet({
   });
 
   const stats = [
-    { icon: Wind, label: "Current winds", value: `${storm.windKph} km/h` },
+    { icon: Wind, label: "Wind", value: `${ktToMs(storm.windKt)} m/s` },
     { icon: Gauge, label: "Pressure", value: storm.pressure ? `${storm.pressure} hPa` : "—" },
     {
       icon: Navigation,
       label: "Moving",
       value: storm.movement.speedKt
         ? `${compass(storm.movement.dirDeg)} ${ktToKph(storm.movement.speedKt)} km/h`
-        : "—",
+        : compass(storm.movement.dirDeg),
     },
-    { icon: Wind, label: "Peak winds", value: `${ktToKph(storm.peakWindKt)} km/h` },
+    { icon: Wind, label: "Peak wind", value: `${ktToMs(storm.peakWindKt)} m/s` },
   ];
 
   return (
