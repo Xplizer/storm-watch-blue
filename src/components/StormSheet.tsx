@@ -170,38 +170,6 @@ export function StormSheet({
           </>
         )}
 
-        {storm.advisory && (
-          <>
-            <h3 className="mt-6 text-sm font-semibold uppercase tracking-widest text-muted-foreground">
-              Latest advisory
-            </h3>
-            <div className="glass-card mt-3 rounded-2xl p-4">
-              {storm.advisory.headline && (
-                <p className="text-sm font-semibold">{storm.advisory.headline}</p>
-              )}
-              {storm.advisory.summary && (
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  {storm.advisory.summary}
-                </p>
-              )}
-              {storm.advisory.issuedAt && (
-                <p className="mt-2 text-[11px] text-muted-foreground">
-                  Issued {formatDateTime(storm.advisory.issuedAt)} by the National Hurricane Center
-                </p>
-              )}
-              <a
-                href={storm.advisory.url}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-primary"
-              >
-                <FileText className="size-3.5" />
-                Read the full advisory
-              </a>
-            </div>
-          </>
-        )}
-
         <h3 className="mt-6 text-sm font-semibold uppercase tracking-widest text-muted-foreground">
           Path so far
         </h3>
@@ -213,11 +181,27 @@ export function StormSheet({
               <li key={p.time} className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">{formatDateTime(p.time)}</span>
                 <span className="font-medium">
-                  {coordLabel(p.lat, p.lon)} · {ktToKph(p.windKt)} km/h
+                  {coordLabel(p.lat, p.lon)} · {ktToMs(p.windKt)} m/s
                 </span>
               </li>
             ))}
         </ol>
+
+        {storm.forecast.length > 0 && (
+          <>
+            <h3 className="mt-6 text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+              Expected path
+            </h3>
+            <ol className="mt-3 space-y-2">
+              {storm.forecast.map((p) => (
+                <li key={p.time} className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">{formatDateTime(p.time)}</span>
+                  <span className="font-medium">{coordLabel(p.lat, p.lon)}</span>
+                </li>
+              ))}
+            </ol>
+          </>
+        )}
 
         {storm.active && (
           <button
