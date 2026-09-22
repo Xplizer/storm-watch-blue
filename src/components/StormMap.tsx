@@ -56,8 +56,8 @@ export function StormMap({
       .then(() => {
         if (cancelled || !ref.current || mapRef.current) return;
         mapRef.current = new window.google.maps.Map(ref.current, {
-          center: { lat: 20, lng: -60 },
-          zoom: 3,
+          center: { lat: 56.0, lng: 10.5 },
+          zoom: 6,
           disableDefaultUI: true,
           zoomControl: true,
           backgroundColor: "#0b1a2b",
@@ -144,6 +144,22 @@ export function StormMap({
         onOpen?.(storm);
       });
       overlaysRef.current.push(marker);
+
+      if (storm.affectedRadiusKm > 0) {
+        overlaysRef.current.push(
+          new g.Circle({
+            map,
+            center: { lat: storm.lat, lng: storm.lon },
+            radius: storm.affectedRadiusKm * 1000,
+            strokeColor: color,
+            strokeOpacity: dim ? 0.2 : 0.5,
+            strokeWeight: 1,
+            fillColor: color,
+            fillOpacity: dim ? 0.05 : 0.12,
+            clickable: false,
+          }),
+        );
+      }
 
       path.forEach((p) => {
         bounds.extend(p);
