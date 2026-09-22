@@ -63,10 +63,15 @@ export function StormSheet({
         <div className="mx-auto mb-5 h-1.5 w-10 rounded-full bg-secondary" />
         <div className="flex items-start justify-between gap-3">
           <div>
-            <BandBadge band={band} />
+            <div className="flex flex-wrap items-center gap-1.5">
+              <BandBadge band={band} />
+              <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-secondary-foreground">
+                {phaseLabel(storm.phase)}
+              </span>
+            </div>
             <h2 className="mt-1.5 text-3xl font-semibold tracking-tight">{storm.name}</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              {storm.category} · {storm.active ? "Active" : "Ended"} · {storm.basinName}
+              {storm.category} · {storm.basinName}
             </p>
           </div>
           <button
@@ -84,12 +89,21 @@ export function StormSheet({
 
         <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
           <CalendarDays className="size-4" />
-          {formatDate(storm.startedAt)} – {formatDate(storm.updatedAt)}
+          {storm.phase === "upcoming"
+            ? `Expected ${formatDateTime(storm.startedAt)}`
+            : storm.phase === "active"
+              ? `Ongoing since ${formatDateTime(storm.startedAt)}`
+              : `${formatDate(storm.startedAt)} – ${formatDate(storm.updatedAt)}`}
         </div>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Last position {coordLabel(storm.lat, storm.lon)} · updated{" "}
-          {formatDateTime(storm.updatedAt)}
+        <p className="mt-2 flex items-start gap-2 text-sm text-muted-foreground">
+          <MapPin className="mt-0.5 size-4 shrink-0" />
+          {storm.affectedAreas} · {coordLabel(storm.lat, storm.lon)}
         </p>
+        {storm.sourceLabel ? (
+          <p className="mt-1 text-[11px] text-muted-foreground">Source: {storm.sourceLabel}</p>
+        ) : (
+          <p className="mt-1 text-[11px] text-muted-foreground">Simulation</p>
+        )}
 
         {approach && (
           <div className="bg-storm-gradient mt-4 rounded-2xl p-4 text-primary-foreground">
