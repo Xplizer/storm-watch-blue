@@ -9,23 +9,23 @@ import { StormSheet } from "@/components/StormSheet";
 import { BottomNav } from "@/components/BottomNav";
 import { useMyLocation } from "@/hooks/useMyLocation";
 import { useTrackedStorms } from "@/hooks/useTrackedStorms";
-import { type Storm } from "@/lib/storm-utils";
+import { ktToMs, phaseLabel, type Storm } from "@/lib/storm-utils";
 import { bandFor } from "@/lib/storm-severity";
 import { BandLegend } from "@/components/SeverityBand";
 
 export const Route = createFileRoute("/map")({
   head: () => ({
     meta: [
-      { title: "Storm Map — Live Cyclone Paths | StormWatch" },
+      { title: "Storm Map Denmark — Paths & Affected Areas | StormWatch" },
       {
         name: "description",
         content:
-          "See every active tropical storm and hurricane on one map, with its real track so far and its forecast path.",
+          "See storms around Denmark on one map, with the path travelled, the expected path and the areas they affect.",
       },
-      { property: "og:title", content: "Storm Map — Live Cyclone Paths" },
+      { property: "og:title", content: "Storm Map Denmark — Paths & Affected Areas" },
       {
         property: "og:description",
-        content: "Live NOAA storm positions, past tracks and forecast paths on one map.",
+        content: "Storm positions, tracks and affected areas across Denmark on one map.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -41,18 +41,21 @@ function MapPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [sheet, setSheet] = useState<Storm | null>(null);
 
-  const active = (data?.storms ?? []).filter((s) => s.active);
-  const selected = active.find((s) => s.id === selectedId) ?? null;
+  const storms = data?.storms ?? [];
+  const order = { active: 0, upcoming: 1, passed: 2 } as const;
+  const shown = [...storms].sort((a, b) => order[a.phase] - order[b.phase]);
+  const selected = shown.find((s) => s.id === selectedId) ?? null;
+  const activeCount = storms.filter((s) => s.phase === "active").length;
 
   return (
     <main className="bg-sky-gradient min-h-screen text-foreground">
       <div className="mx-auto flex min-h-screen max-w-md flex-col px-5 pb-32 pt-10">
         <header className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-semibold tracking-tight">Storm map</h1>
+            <h1 className="text-xl font-semibold tracking-tight">Storm map · Denmark</h1>
             <p className="text-xs text-muted-foreground">
-              {active.length} active {active.length === 1 ? "storm" : "storms"} · solid line = path
-              travelled, dotted = forecast
+              {shown.length} storms ({activeCount} active) · solid line = path travelled, dotted =
+              expected path, circle = affected area
             </p>
           </div>
           <button
@@ -71,7 +74,7 @@ function MapPage() {
         <div className="glass-card shadow-lift mt-4 h-[58vh] overflow-hidden rounded-3xl">
           {isLoading ? (
             <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-              Loading live storm tracks…
+              Loading storm tracks…
             </div>
           ) : (
             <ClientOnly
@@ -82,7 +85,7 @@ function MapPage() {
               }
             >
               <StormMap
-                storms={active}
+                storms={shown}
                 me={location}
                 selectedId={selectedId}
                 onSelect={setSelectedId}
@@ -97,7 +100,7 @@ function MapPage() {
         </div>
 
         <div className="mt-4 space-y-2">
-          {active.map((storm) => (
+          {shown.map((storm) => (
             <button
               key={storm.id}
               onClick={() => setSheet(storm)}
@@ -113,28 +116,28 @@ function MapPage() {
               <div className="pl-2">
                 <p className="text-sm font-semibold">{storm.name}</p>
                 <p className="text-[11px] opacity-75">
-                  {bandFor(storm).label} · {storm.basinName}
+                  {phaseLabel(storm.phase)} · {bandFor(storm).label} · {storm.basinName}
                 </p>
               </div>
               <span className="text-sm font-bold">
-                {storm.windKph} <span className="text-[10px] font-medium opacity-75">km/h</span>
+                {ktToMs(storm.windKt)} <span className="text-[10px] font-medium opacity-75">m/s</span>
               </span>
             </button>
           ))}
-          {!isLoading && active.length === 0 && (
+          {!isLoading && shown.length === 0 && (
             <p className="glass-card rounded-2xl p-4 text-center text-sm text-muted-foreground">
-              No named storms are active right now. Past storms are in the tracker.
+              No storms to show right now.
             </p>
           )}
           {selected && (
             <p className="pt-1 text-center text-[11px] text-muted-foreground">
-              {selected.name} is highlighted on the map — tap it for the full advisory
+              {selected.name} is highlighted on the map — tap it for full details
             </p>
           )}
         </div>
 
         <p className="mt-6 text-center text-[11px] text-muted-foreground">
-          Live data: NOAA National Hurricane Center · colours show storm severity
+          School-project demo · colours show storm strength
         </p>
       </div>
 

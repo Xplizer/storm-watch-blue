@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { toast } from "sonner";
-import { approachToPoint, type Storm } from "@/lib/storm-utils";
+import { approachToPoint, ktToMs, type Storm } from "@/lib/storm-utils";
 import type { MyLocation } from "./useMyLocation";
 
 const FIRED_KEY = "stormwatch:alerts-fired";
@@ -69,10 +69,12 @@ export function useStormAlerts(
         fresh.push({
           id: key,
           stormId: storm.id,
-          title: `${storm.name} is ${inside ? "within" : "forecast within"} ${ring} km`,
-          body: inside
-            ? `${storm.category} · ${storm.windKph} km/h · ${distanceKm} km from your area.`
-            : `Closest approach ${closestKm} km${closestAt ? ` around ${new Date(closestAt).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}` : ""}.`,
+          title: `${storm.name} is ${inside ? "within" : "expected within"} ${ring} km`,
+          body:
+            (inside
+              ? `${storm.category} · ${ktToMs(storm.windKt)} m/s · ${distanceKm} km from your area.`
+              : `Closest approach ${closestKm} km${closestAt ? ` around ${new Date(closestAt).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}` : ""}.`) +
+            (storm.simulated ? " Simulation." : ""),
           at: new Date().toISOString(),
         });
         break;

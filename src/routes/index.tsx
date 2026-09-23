@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   CloudLightning,
   Crosshair,
@@ -13,7 +13,13 @@ import {
 } from "lucide-react";
 import { stormsQueryOptions } from "@/lib/storm-queries";
 import { getLocalConditions } from "@/lib/storms.functions";
-import { approachToPoint, formatDateTime, type Storm } from "@/lib/storm-utils";
+import {
+  approachToPoint,
+  formatDateTime,
+  ktToMs,
+  phaseLabel,
+  type Storm,
+} from "@/lib/storm-utils";
 import { StormCard } from "@/components/StormCard";
 import { StormSheet } from "@/components/StormSheet";
 import { BottomNav } from "@/components/BottomNav";
@@ -24,17 +30,17 @@ import { useStormAlerts } from "@/hooks/useStormAlerts";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "StormWatch — Live Storm Tracker & Alerts" },
+      { title: "StormWatch Denmark — Storm Tracker (School Demo)" },
       {
         name: "description",
         content:
-          "Track live hurricanes and tropical storms from NOAA, see past storms with real dates and paths, and get alerted when a storm moves toward your area.",
+          "Follow upcoming, active and passed storms around Denmark — from Lillebælt and Esbjerg to Aarhus, Aalborg, Odense and Copenhagen. A school-project demo with simulated storms.",
       },
-      { property: "og:title", content: "StormWatch — Live Storm Tracker & Alerts" },
+      { property: "og:title", content: "StormWatch Denmark — Storm Tracker" },
       {
         property: "og:description",
         content:
-          "Real-time NOAA storm positions, forecast paths and proximity alerts for your area.",
+          "Storm positions, paths and affected areas around Denmark, with proximity alerts for your own area.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -50,6 +56,12 @@ function Index() {
   const [tab, setTab] = useState<"incoming" | "past">("incoming");
   const [sheet, setSheet] = useState<Storm | null>(null);
 
+  // The journal feature was removed — clear any data it left behind.
+  useEffect(() => {
+    localStorage.removeItem("stormwatch:journal");
+  }, []);
+
+
   const storms = data?.storms ?? [];
   const { alerts, permission, requestPermission } = useStormAlerts(storms, location, tracked);
 
@@ -63,15 +75,19 @@ function Index() {
   const incoming = useMemo(
     () =>
       storms
-        .filter((s) => s.active)
+        .filter((s) => s.phase !== "passed")
         .sort((a, b) => {
+          if (a.phase !== b.phase) return a.phase === "active" ? -1 : 1;
           if (!location) return b.windKt - a.windKt;
           return approachToPoint(a, location).closestKm - approachToPoint(b, location).closestKm;
         }),
     [storms, location],
   );
   const past = useMemo(
-    () => storms.filter((s) => !s.active).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)),
+    () =>
+      storms
+        .filter((s) => s.phase === "passed")
+        .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)),
     [storms],
   );
 
@@ -89,9 +105,9 @@ function Index() {
               <CloudLightning className="relative size-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-xl font-semibold tracking-tight">StormWatch</h1>
+              <h1 className="text-xl font-semibold tracking-tight">StormWatch Denmark</h1>
               <p className="text-[11px] text-muted-foreground">
-                {isFetching ? "Updating…" : `Live · updated ${formatDateTime(new Date(dataUpdatedAt || Date.now()).toISOString())}`}
+                {isFetching ? "Updating…" : `Updated ${formatDateTime(new Date(dataUpdatedAt || Date.now()).toISOString())}`}
               </p>
             </div>
           </div>
@@ -153,11 +169,13 @@ function Index() {
                 {nearestApproach.distanceKm.toLocaleString()} km
               </span>
             </div>
-            <p className="mt-1 text-sm opacity-85">{nearest.category}</p>
+            <p className="mt-1 text-sm opacity-85">
+              {nearest.category} · {phaseLabel(nearest.phase)} · {nearest.basinName}
+            </p>
             <div className="mt-4 grid grid-cols-3 gap-2">
               <div>
-                <p className="text-xl font-semibold">{nearest.windKph}</p>
-                <p className="text-[11px] opacity-70">km/h winds</p>
+                <p className="text-xl font-semibold">{ktToMs(nearest.windKt)}</p>
+                <p className="text-[11px] opacity-70">m/s winds</p>
               </div>
               <div>
                 <p className="text-xl font-semibold">{nearest.pressure ?? "—"}</p>
@@ -188,7 +206,7 @@ function Index() {
                 {local.data.temperatureC !== null ? `${Math.round(local.data.temperatureC)}°` : "—"}
               </p>
               <p className="text-[11px] text-muted-foreground">
-                wind {local.data.windKph !== null ? `${Math.round(local.data.windKph)} km/h` : "—"}
+                wind {local.data.windKph !== null ? `${Math.round(local.data.windKph / 3.6)} m/s` : "—"}
               </p>
             </div>
           </div>
@@ -249,14 +267,14 @@ function Index() {
         <div className="mt-4 space-y-3">
           {isLoading && (
             <p className="glass-card rounded-2xl p-6 text-center text-sm text-muted-foreground">
-              Loading live storms from NOAA…
+              Loading storms around Denmark…
             </p>
           )}
           {!isLoading && list.length === 0 && (
             <p className="glass-card rounded-2xl p-6 text-center text-sm text-muted-foreground">
               {tab === "incoming"
-                ? "No named storms are active right now."
-                : "No storms recorded for this season yet."}
+                ? "No storms are on the way right now."
+                : "No past storms recorded yet."}
             </p>
           )}
           {list.map((storm) => (
@@ -280,7 +298,7 @@ function Index() {
         </Link>
 
         <p className="mt-4 text-center text-[11px] text-muted-foreground">
-          Source: NOAA National Hurricane Center best-track and advisory data.
+          School-project demo · storms around Denmark · some entries are simulated
         </p>
       </div>
 
