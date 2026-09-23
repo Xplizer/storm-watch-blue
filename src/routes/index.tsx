@@ -93,9 +93,9 @@ function Index() {
               <CloudLightning className="relative size-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-xl font-semibold tracking-tight">StormWatch</h1>
+              <h1 className="text-xl font-semibold tracking-tight">StormWatch Denmark</h1>
               <p className="text-[11px] text-muted-foreground">
-                {isFetching ? "Updating…" : `Live · updated ${formatDateTime(new Date(dataUpdatedAt || Date.now()).toISOString())}`}
+                {isFetching ? "Updating…" : `Updated ${formatDateTime(new Date(dataUpdatedAt || Date.now()).toISOString())}`}
               </p>
             </div>
           </div>
@@ -157,11 +157,13 @@ function Index() {
                 {nearestApproach.distanceKm.toLocaleString()} km
               </span>
             </div>
-            <p className="mt-1 text-sm opacity-85">{nearest.category}</p>
+            <p className="mt-1 text-sm opacity-85">
+              {nearest.category} · {phaseLabel(nearest.phase)} · {nearest.basinName}
+            </p>
             <div className="mt-4 grid grid-cols-3 gap-2">
               <div>
-                <p className="text-xl font-semibold">{nearest.windKph}</p>
-                <p className="text-[11px] opacity-70">km/h winds</p>
+                <p className="text-xl font-semibold">{ktToMs(nearest.windKt)}</p>
+                <p className="text-[11px] opacity-70">m/s winds</p>
               </div>
               <div>
                 <p className="text-xl font-semibold">{nearest.pressure ?? "—"}</p>
@@ -253,14 +255,14 @@ function Index() {
         <div className="mt-4 space-y-3">
           {isLoading && (
             <p className="glass-card rounded-2xl p-6 text-center text-sm text-muted-foreground">
-              Loading live storms from NOAA…
+              Loading storms around Denmark…
             </p>
           )}
           {!isLoading && list.length === 0 && (
             <p className="glass-card rounded-2xl p-6 text-center text-sm text-muted-foreground">
               {tab === "incoming"
-                ? "No named storms are active right now."
-                : "No storms recorded for this season yet."}
+                ? "No storms are on the way right now."
+                : "No past storms recorded yet."}
             </p>
           )}
           {list.map((storm) => (
@@ -284,7 +286,7 @@ function Index() {
         </Link>
 
         <p className="mt-4 text-center text-[11px] text-muted-foreground">
-          Source: NOAA National Hurricane Center best-track and advisory data.
+          School-project demo · storms around Denmark · some entries are simulated
         </p>
       </div>
 
