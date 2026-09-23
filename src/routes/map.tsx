@@ -9,7 +9,7 @@ import { StormSheet } from "@/components/StormSheet";
 import { BottomNav } from "@/components/BottomNav";
 import { useMyLocation } from "@/hooks/useMyLocation";
 import { useTrackedStorms } from "@/hooks/useTrackedStorms";
-import { type Storm } from "@/lib/storm-utils";
+import { ktToMs, phaseLabel, type Storm } from "@/lib/storm-utils";
 import { bandFor } from "@/lib/storm-severity";
 import { BandLegend } from "@/components/SeverityBand";
 
