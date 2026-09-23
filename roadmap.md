@@ -12,3 +12,10 @@
 - [x] Remove the rejected per-storm provenance and duplicated notice requirement from the plan.
 - [x] Use one consistent storm style without per-event real/fictional labels; retain one project-wide demo disclaimer.
 - [x] Validate only the mobile layout; retain minimum truthful simulation labeling for fictional weather.
+
+- [x] Denmark storm dataset (real Bodil/Malik/Pia + demo Freja/Atlas/Nova/Elias/Saga)
+- [x] Danish wind bands, m/s as the main unit, Upcoming/Active/Passed labels
+- [x] Map centred on Denmark with paths and affected-area circles
+- [x] Details panel with status, location, timing, direction, affected areas
+- [x] Journal removed (page, nav item, hook, stored data)
+- [x] Denmark page titles and descriptions; US wording removed
