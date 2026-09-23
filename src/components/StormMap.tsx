@@ -190,6 +190,7 @@ export function StormMap({
     const selected = storms.find((s) => s.id === selectedId);
     if (selected) {
       map.panTo({ lat: selected.lat, lng: selected.lon });
+      if ((map.getZoom() ?? 6) < 7) map.setZoom(7);
     } else if (hasBounds) {
       map.fitBounds(bounds, 40);
     }
