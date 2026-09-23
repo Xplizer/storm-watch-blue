@@ -200,7 +200,7 @@ function Index() {
                 {local.data.temperatureC !== null ? `${Math.round(local.data.temperatureC)}°` : "—"}
               </p>
               <p className="text-[11px] text-muted-foreground">
-                wind {local.data.windKph !== null ? `${Math.round(local.data.windKph)} km/h` : "—"}
+                wind {local.data.windKph !== null ? `${Math.round(local.data.windKph / 3.6)} m/s` : "—"}
               </p>
             </div>
           </div>

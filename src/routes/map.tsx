@@ -16,16 +16,16 @@ import { BandLegend } from "@/components/SeverityBand";
 export const Route = createFileRoute("/map")({
   head: () => ({
     meta: [
-      { title: "Storm Map — Live Cyclone Paths | StormWatch" },
+      { title: "Storm Map Denmark — Paths & Affected Areas | StormWatch" },
       {
         name: "description",
         content:
-          "See every active tropical storm and hurricane on one map, with its real track so far and its forecast path.",
+          "See storms around Denmark on one map, with the path travelled, the expected path and the areas they affect.",
       },
-      { property: "og:title", content: "Storm Map — Live Cyclone Paths" },
+      { property: "og:title", content: "Storm Map Denmark — Paths & Affected Areas" },
       {
         property: "og:description",
-        content: "Live NOAA storm positions, past tracks and forecast paths on one map.",
+        content: "Storm positions, tracks and affected areas across Denmark on one map.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
