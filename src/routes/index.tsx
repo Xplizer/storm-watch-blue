@@ -24,17 +24,17 @@ import { useStormAlerts } from "@/hooks/useStormAlerts";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "StormWatch — Live Storm Tracker & Alerts" },
+      { title: "StormWatch Denmark — Storm Tracker (School Demo)" },
       {
         name: "description",
         content:
-          "Track live hurricanes and tropical storms from NOAA, see past storms with real dates and paths, and get alerted when a storm moves toward your area.",
+          "Follow upcoming, active and passed storms around Denmark — from Lillebælt and Esbjerg to Aarhus, Aalborg, Odense and Copenhagen. A school-project demo with simulated storms.",
       },
-      { property: "og:title", content: "StormWatch — Live Storm Tracker & Alerts" },
+      { property: "og:title", content: "StormWatch Denmark — Storm Tracker" },
       {
         property: "og:description",
         content:
-          "Real-time NOAA storm positions, forecast paths and proximity alerts for your area.",
+          "Storm positions, paths and affected areas around Denmark, with proximity alerts for your own area.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
