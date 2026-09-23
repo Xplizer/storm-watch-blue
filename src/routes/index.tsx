@@ -63,15 +63,19 @@ function Index() {
   const incoming = useMemo(
     () =>
       storms
-        .filter((s) => s.active)
+        .filter((s) => s.phase !== "passed")
         .sort((a, b) => {
+          if (a.phase !== b.phase) return a.phase === "active" ? -1 : 1;
           if (!location) return b.windKt - a.windKt;
           return approachToPoint(a, location).closestKm - approachToPoint(b, location).closestKm;
         }),
     [storms, location],
   );
   const past = useMemo(
-    () => storms.filter((s) => !s.active).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)),
+    () =>
+      storms
+        .filter((s) => s.phase === "passed")
+        .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)),
     [storms],
   );
 
