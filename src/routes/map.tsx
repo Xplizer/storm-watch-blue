@@ -103,7 +103,14 @@ function MapPage() {
           {shown.map((storm) => (
             <button
               key={storm.id}
-              onClick={() => setSheet(storm)}
+              onClick={() => {
+                if (selectedId === storm.id) {
+                  setSheet(storm);
+                  return;
+                }
+                setSelectedId(storm.id);
+                mapBoxRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+              }}
               className={`relative flex w-full items-center justify-between overflow-hidden rounded-2xl px-4 py-3 text-left transition-colors ${
                 selectedId === storm.id ? "bg-primary text-primary-foreground" : "glass-card"
               }`}
@@ -131,7 +138,7 @@ function MapPage() {
           )}
           {selected && (
             <p className="pt-1 text-center text-[11px] text-muted-foreground">
-              {selected.name} is highlighted on the map — tap it for full details
+              {selected.name} is focused on the map — tap it again for full details
             </p>
           )}
         </div>
