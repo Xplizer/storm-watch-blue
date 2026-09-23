@@ -41,18 +41,21 @@ function MapPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [sheet, setSheet] = useState<Storm | null>(null);
 
-  const active = (data?.storms ?? []).filter((s) => s.active);
-  const selected = active.find((s) => s.id === selectedId) ?? null;
+  const storms = data?.storms ?? [];
+  const order = { active: 0, upcoming: 1, passed: 2 } as const;
+  const shown = [...storms].sort((a, b) => order[a.phase] - order[b.phase]);
+  const selected = shown.find((s) => s.id === selectedId) ?? null;
+  const activeCount = storms.filter((s) => s.phase === "active").length;
 
   return (
     <main className="bg-sky-gradient min-h-screen text-foreground">
       <div className="mx-auto flex min-h-screen max-w-md flex-col px-5 pb-32 pt-10">
         <header className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-semibold tracking-tight">Storm map</h1>
+            <h1 className="text-xl font-semibold tracking-tight">Storm map · Denmark</h1>
             <p className="text-xs text-muted-foreground">
-              {active.length} active {active.length === 1 ? "storm" : "storms"} · solid line = path
-              travelled, dotted = forecast
+              {shown.length} storms ({activeCount} active) · solid line = path travelled, dotted =
+              expected path, circle = affected area
             </p>
           </div>
           <button
