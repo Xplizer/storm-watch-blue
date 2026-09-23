@@ -56,6 +56,12 @@ function Index() {
   const [tab, setTab] = useState<"incoming" | "past">("incoming");
   const [sheet, setSheet] = useState<Storm | null>(null);
 
+  // The journal feature was removed — clear any data it left behind.
+  useEffect(() => {
+    localStorage.removeItem("stormwatch:journal");
+  }, []);
+
+
   const storms = data?.storms ?? [];
   const { alerts, permission, requestPermission } = useStormAlerts(storms, location, tracked);
 
