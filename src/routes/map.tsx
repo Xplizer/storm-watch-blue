@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ClientOnly } from "@tanstack/react-router";
 import { Crosshair, Loader2 } from "lucide-react";
 import { stormsQueryOptions } from "@/lib/storm-queries";
@@ -40,6 +40,7 @@ function MapPage() {
   const { tracked, toggle } = useTrackedStorms();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [sheet, setSheet] = useState<Storm | null>(null);
+  const mapBoxRef = useRef<HTMLDivElement>(null);
 
   const storms = data?.storms ?? [];
   const order = { active: 0, upcoming: 1, passed: 2 } as const;
@@ -71,7 +72,10 @@ function MapPage() {
           </button>
         </header>
 
-        <div className="glass-card shadow-lift mt-4 h-[58vh] overflow-hidden rounded-3xl">
+        <div
+          ref={mapBoxRef}
+          className="glass-card shadow-lift mt-4 h-[58vh] overflow-hidden rounded-3xl"
+        >
           {isLoading ? (
             <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
               Loading storm tracks…
