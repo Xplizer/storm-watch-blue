@@ -2,14 +2,15 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useRef, useState } from "react";
 import { ClientOnly } from "@tanstack/react-router";
-import { Crosshair, Loader2 } from "lucide-react";
+import { Crosshair, Loader2, Clock } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
 import { stormsQueryOptions } from "@/lib/storm-queries";
 import { StormMap } from "@/components/StormMap";
 import { StormSheet } from "@/components/StormSheet";
 import { BottomNav } from "@/components/BottomNav";
 import { useMyLocation } from "@/hooks/useMyLocation";
 import { useTrackedStorms } from "@/hooks/useTrackedStorms";
-import { ktToMs, phaseLabel, type Storm } from "@/lib/storm-utils";
+import { formatDateTime, ktToMs, phaseLabel, positionAt, timeline, type Storm } from "@/lib/storm-utils";
 import { bandFor } from "@/lib/storm-severity";
 import { BandLegend } from "@/components/SeverityBand";
 
@@ -47,6 +48,17 @@ function MapPage() {
   const shown = [...storms].sort((a, b) => order[a.phase] - order[b.phase]);
   const selected = shown.find((s) => s.id === selectedId) ?? null;
   const activeCount = storms.filter((s) => s.phase === "active").length;
+  const [time, setTime] = useState<number | null>(null);
+
+  // Time range: the selected storm, otherwise all recent (2026) storms.
+  const rangeStorms = selected ? [selected] : shown.filter((s) => s.simulated);
+  const times = rangeStorms.flatMap((s) => timeline(s).map((p) => p.t));
+  const HOUR = 3600_000;
+  const minT = times.length ? Math.floor(Math.min(...times) / HOUR) * HOUR : 0;
+  const maxT = times.length ? Math.ceil(Math.max(...times) / HOUR) * HOUR : 0;
+  const clampedTime = time === null ? null : Math.min(maxT, Math.max(minT, time));
+  const visibleAtTime =
+    clampedTime === null ? null : shown.filter((s) => positionAt(s, clampedTime)).length;
 
   return (
     <main className="bg-sky-gradient min-h-screen text-foreground">
@@ -94,10 +106,50 @@ function MapPage() {
                 selectedId={selectedId}
                 onSelect={setSelectedId}
                 onOpen={setSheet}
+                time={clampedTime}
               />
             </ClientOnly>
           )}
         </div>
+
+        {maxT > minT && (
+          <div className="glass-card mt-3 rounded-2xl p-4">
+            <div className="flex items-center justify-between gap-2">
+              <p className="flex items-center gap-1.5 text-sm font-semibold">
+                <Clock className="size-4 text-primary" />
+                {clampedTime === null ? "Slide through time" : formatDateTime(new Date(clampedTime).toISOString())}
+              </p>
+              {clampedTime !== null && (
+                <button
+                  onClick={() => setTime(null)}
+                  className="rounded-full bg-secondary px-3 py-1 text-[11px] font-semibold text-secondary-foreground"
+                >
+                  Show all
+                </button>
+              )}
+            </div>
+            <Slider
+              className="mt-4"
+              min={minT}
+              max={maxT}
+              step={HOUR}
+              value={[clampedTime ?? minT]}
+              onValueChange={([v]) => setTime(v ?? minT)}
+              aria-label="Time"
+            />
+            <div className="mt-2 flex justify-between text-[10px] text-muted-foreground">
+              <span>{formatDateTime(new Date(minT).toISOString())}</span>
+              <span>{formatDateTime(new Date(maxT).toISOString())}</span>
+            </div>
+            <p className="mt-2 text-[11px] text-muted-foreground">
+              {clampedTime === null
+                ? selected
+                  ? `Drag to watch ${selected.name} move along its path.`
+                  : "Drag to watch the storms move across Denmark."
+                : `${visibleAtTime} storm${visibleAtTime === 1 ? "" : "s"} on the map at this time`}
+            </p>
+          </div>
+        )}
 
         <div className="mt-3">
           <BandLegend />

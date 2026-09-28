@@ -44,7 +44,7 @@ export function WaterLevelCard({ storm }: { storm: Storm }) {
 }
 
 function tipsFor(storm: Storm): string[] {
-  const band = bandFor(storm).id;
+  const band = bandFor(storm).key;
   const severe = band === "storm" || band === "violent" || band === "hurricane";
   const flood = storm.water && RISK_LEVEL[storm.water.floodRisk] >= 3;
   if (storm.phase === "passed") {
