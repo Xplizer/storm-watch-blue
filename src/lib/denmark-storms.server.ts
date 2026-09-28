@@ -1,4 +1,4 @@
-import { classify, ktToKph, type Storm, type TrackPoint } from "./storm-utils";
+import { classify, ktToKph, type FloodRisk, type Storm, type TrackPoint } from "./storm-utils";
 
 type Point = [string, number, number, number, number | null];
 
@@ -15,6 +15,7 @@ function storm(input: {
   radius: number;
   simulated: boolean;
   source?: string;
+  water?: { peakCm: number; places: string; floodRisk: FloodRisk };
 }): Storm {
   const track: TrackPoint[] = input.points.map(([time, lat, lon, windKt, pressure]) => ({
     time,
@@ -52,6 +53,7 @@ function storm(input: {
     affectedRadiusKm: input.radius,
     simulated: input.simulated,
     sourceLabel: input.source ?? null,
+    water: input.water ?? null,
   };
 }
 
@@ -60,30 +62,30 @@ const STORMS: Storm[] = [
     id: "dk-freja-2026", name: "Storm Freja", phase: "active", location: "Lillebælt",
     points: [["2026-09-21T12:00:00Z", 55.25, 9.15, 50, 986], ["2026-09-21T16:00:00Z", 55.42, 9.48, 58, 978]],
     forecast: [["2026-09-21T18:00:00Z", 55.52, 9.65], ["2026-09-21T20:00:00Z", 55.58, 9.78], ["2026-09-21T23:00:00Z", 55.76, 10.18]],
-    direction: 55, speedKt: 18, affectedAreas: "Fredericia, Middelfart and the Lillebælt area", radius: 48, simulated: true,
+    direction: 55, speedKt: 18, affectedAreas: "Fredericia, Middelfart and the Lillebælt area", radius: 48, water: { peakCm: 145, places: "Fredericia harbour, Middelfart and Kolding Fjord", floodRisk: "high" }, simulated: true,
   }),
   storm({
     id: "dk-atlas-2026", name: "Storm Atlas", phase: "upcoming", location: "Western Jutland / North Sea",
     points: [["2026-09-22T06:00:00Z", 56.15, 5.55, 47, 988]],
     forecast: [["2026-09-22T10:00:00Z", 56.2, 6.2], ["2026-09-22T12:00:00Z", 56.18, 7.25], ["2026-09-22T14:00:00Z", 56.16, 8.2]],
-    direction: 90, speedKt: 22, affectedAreas: "Esbjerg, Ringkøbing and the western coast", radius: 90, simulated: true,
+    direction: 90, speedKt: 22, affectedAreas: "Esbjerg, Ringkøbing and the western coast", radius: 90, water: { peakCm: 260, places: "Esbjerg, Thyborøn and the Wadden Sea coast", floodRisk: "severe" }, simulated: true,
   }),
   storm({
     id: "dk-nova-2026", name: "Storm Nova", phase: "upcoming", location: "Zealand",
     points: [["2026-09-23T11:00:00Z", 55.1, 11.2, 42, 992]],
     forecast: [["2026-09-23T14:00:00Z", 55.32, 11.65], ["2026-09-23T16:00:00Z", 55.52, 12.02], ["2026-09-23T18:00:00Z", 55.68, 12.56]],
-    direction: 50, speedKt: 16, affectedAreas: "Western Zealand, Roskilde and Copenhagen", radius: 70, simulated: true,
+    direction: 50, speedKt: 16, affectedAreas: "Western Zealand, Roskilde and Copenhagen", radius: 70, water: { peakCm: 120, places: "Roskilde Fjord, Køge Bay and Copenhagen harbour", floodRisk: "moderate" }, simulated: true,
   }),
   storm({
     id: "dk-elias-2026", name: "Storm Elias", phase: "active", location: "Aarhus Bay",
     points: [["2026-09-21T09:00:00Z", 56.0, 10.25, 38, 995], ["2026-09-21T15:00:00Z", 56.2, 10.42, 44, 990]],
     forecast: [["2026-09-21T19:00:00Z", 56.55, 10.25], ["2026-09-21T22:00:00Z", 56.92, 10.05]],
-    direction: 340, speedKt: 14, affectedAreas: "Aarhus, Djursland and southern Aalborg", radius: 58, simulated: true,
+    direction: 340, speedKt: 14, affectedAreas: "Aarhus, Djursland and southern Aalborg", radius: 58, water: { peakCm: 95, places: "Aarhus harbour and Kalø Vig", floodRisk: "moderate" }, simulated: true,
   }),
   storm({
     id: "dk-saga-2026", name: "Storm Saga", phase: "passed", location: "Odense / Funen",
     points: [["2026-09-15T10:00:00Z", 54.95, 9.25, 35, 997], ["2026-09-15T14:00:00Z", 55.28, 10.05, 41, 992], ["2026-09-15T18:00:00Z", 55.55, 10.82, 30, 1000]],
-    direction: 55, speedKt: 15, affectedAreas: "Odense, central Funen and the Great Belt", radius: 52, simulated: true,
+    direction: 55, speedKt: 15, affectedAreas: "Odense, central Funen and the Great Belt", radius: 52, water: { peakCm: 70, places: "Odense Fjord", floodRisk: "low" }, simulated: true,
   }),
   storm({
     id: "dk-bodil-2013", name: "Storm Bodil", phase: "passed", location: "North Sea / North Zealand",

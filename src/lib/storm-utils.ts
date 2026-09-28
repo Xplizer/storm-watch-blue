@@ -38,6 +38,7 @@ export type Storm = {
   affectedRadiusKm: number;
   simulated: boolean;
   sourceLabel: string | null;
+  water: { peakCm: number; places: string; floodRisk: FloodRisk } | null;
 };
 
 export type StormAdvisory = {
@@ -147,4 +148,41 @@ export function compass(deg: number | null) {
   if (deg === null) return "—";
   const dirs = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
   return dirs[Math.round(deg / 22.5) % 16]!;
+}
+
+export type FloodRisk = "low" | "moderate" | "high" | "severe";
+
+export const FLOOD_LABEL: Record<FloodRisk, string> = {
+  low: "Low flood risk",
+  moderate: "Moderate flood risk",
+  high: "High flood risk",
+  severe: "Severe flood risk",
+};
+
+/** All timed points of a storm (track then forecast). */
+export function timeline(storm: Storm) {
+  return [
+    ...storm.track.map((p) => ({ t: Date.parse(p.time), lat: p.lat, lon: p.lon })),
+    ...storm.forecast.map((p) => ({ t: Date.parse(p.time), lat: p.lat, lon: p.lon })),
+  ].sort((a, b) => a.t - b.t);
+}
+
+/** Interpolated position at time t, or null when the storm isn't present then. */
+export function positionAt(storm: Storm, t: number): { lat: number; lon: number } | null {
+  const pts = timeline(storm);
+  if (pts.length === 0) return null;
+  const first = pts[0]!;
+  const last = pts[pts.length - 1]!;
+  if (t < first.t - 3600_000 || t > last.t + 3600_000) return null;
+  if (t <= first.t) return first;
+  if (t >= last.t) return last;
+  for (let i = 1; i < pts.length; i++) {
+    const a = pts[i - 1]!;
+    const b = pts[i]!;
+    if (t <= b.t) {
+      const f = (t - a.t) / (b.t - a.t || 1);
+      return { lat: a.lat + (b.lat - a.lat) * f, lon: a.lon + (b.lon - a.lon) * f };
+    }
+  }
+  return last;
 }
