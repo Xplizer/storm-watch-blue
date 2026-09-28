@@ -14,6 +14,7 @@ import {
 import { bandFor } from "@/lib/storm-severity";
 import { getLocalConditions } from "@/lib/storms.functions";
 import { BandBadge, SeverityScale } from "./SeverityBand";
+import { StormPreparation, WaterLevelCard } from "./StormSafety";
 
 export function StormSheet({
   storm,
@@ -127,6 +128,9 @@ export function StormSheet({
             </div>
           ))}
         </div>
+
+        <WaterLevelCard storm={storm} />
+        <StormPreparation storm={storm} />
 
         {storm.active && (
           <>

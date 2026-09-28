@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { Storm } from "@/lib/storm-utils";
-import { severity } from "@/lib/storm-utils";
+import { positionAt, severity } from "@/lib/storm-utils";
 import { bandFor } from "@/lib/storm-severity";
 
 declare global {
@@ -38,12 +38,14 @@ export function StormMap({
   selectedId,
   onSelect,
   onOpen,
+  time = null,
 }: {
   storms: Storm[];
   me: { lat: number; lon: number } | null;
   selectedId: string | null;
   onSelect: (id: string) => void;
   onOpen?: (storm: Storm) => void;
+  time?: number | null;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
@@ -92,6 +94,7 @@ export function StormMap({
     storms.forEach((storm) => {
       const color = bandFor(storm).hex;
       const dim = selectedId !== null && selectedId !== storm.id;
+      const pos = time === null ? { lat: storm.lat, lon: storm.lon } : positionAt(storm, time);
       const path = storm.track.map((p) => ({ lat: p.lat, lng: p.lon }));
       if (path.length > 1) {
         const line = new g.Polyline({
@@ -126,8 +129,15 @@ export function StormMap({
         );
       }
 
+      if (!pos) {
+        path.forEach((p) => {
+          bounds.extend(p);
+          hasBounds = true;
+        });
+        return;
+      }
       const marker = new g.Marker({
-        position: { lat: storm.lat, lng: storm.lon },
+        position: { lat: pos.lat, lng: pos.lon },
         map,
         title: `${storm.name} — ${storm.category}`,
         icon: {
@@ -149,7 +159,7 @@ export function StormMap({
         overlaysRef.current.push(
           new g.Circle({
             map,
-            center: { lat: storm.lat, lng: storm.lon },
+            center: { lat: pos.lat, lng: pos.lon },
             radius: storm.affectedRadiusKm * 1000,
             strokeColor: color,
             strokeOpacity: dim ? 0.2 : 0.5,
@@ -188,13 +198,16 @@ export function StormMap({
     }
 
     const selected = storms.find((s) => s.id === selectedId);
-    if (selected) {
-      map.panTo({ lat: selected.lat, lng: selected.lon });
+    const selPos = selected
+      ? (time === null ? { lat: selected.lat, lon: selected.lon } : positionAt(selected, time))
+      : null;
+    if (selected && selPos) {
+      map.panTo({ lat: selPos.lat, lng: selPos.lon });
       if ((map.getZoom() ?? 6) < 7) map.setZoom(7);
-    } else if (hasBounds) {
+    } else if (!selected && hasBounds && time === null) {
       map.fitBounds(bounds, 40);
     }
-  }, [storms, me, selectedId, onSelect, onOpen]);
+  }, [storms, me, selectedId, onSelect, onOpen, time]);
 
   if (error) {
     return (
