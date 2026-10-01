@@ -40,16 +40,16 @@ export function StormSheet({
   });
 
   const stats = [
-    { icon: Wind, label: "Wind", value: `${ktToMs(storm.windKt)} m/s` },
-    { icon: Gauge, label: "Pressure", value: storm.pressure ? `${storm.pressure} hPa` : "—" },
+    { icon: Wind, label: "Vind", value: `${ktToMs(storm.windKt)} m/s` },
+    { icon: Gauge, label: "Lufttryk", value: storm.pressure ? `${storm.pressure} hPa` : "—" },
     {
       icon: Navigation,
-      label: "Moving",
+      label: "Bevæger sig",
       value: storm.movement.speedKt
         ? `${compass(storm.movement.dirDeg)} ${ktToKph(storm.movement.speedKt)} km/h`
         : compass(storm.movement.dirDeg),
     },
-    { icon: Wind, label: "Peak wind", value: `${ktToMs(storm.peakWindKt)} m/s` },
+    { icon: Wind, label: "Kraftigste vind", value: `${ktToMs(storm.peakWindKt)} m/s` },
   ];
 
   return (
@@ -77,7 +77,7 @@ export function StormSheet({
           </div>
           <button
             onClick={onClose}
-            aria-label="Close storm details"
+            aria-label="Luk stormdetaljer"
             className="rounded-full bg-secondary p-2 text-secondary-foreground"
           >
             <X className="size-4" />
@@ -91,9 +91,9 @@ export function StormSheet({
         <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
           <CalendarDays className="size-4" />
           {storm.phase === "upcoming"
-            ? `Expected ${formatDateTime(storm.startedAt)}`
+            ? `Forventet ${formatDateTime(storm.startedAt)}`
             : storm.phase === "active"
-              ? `Ongoing since ${formatDateTime(storm.startedAt)}`
+              ? `I gang siden ${formatDateTime(storm.startedAt)}`
               : `${formatDate(storm.startedAt)} – ${formatDate(storm.updatedAt)}`}
         </div>
         <p className="mt-2 flex items-start gap-2 text-sm text-muted-foreground">
@@ -101,19 +101,19 @@ export function StormSheet({
           {storm.affectedAreas} · {coordLabel(storm.lat, storm.lon)}
         </p>
         {storm.sourceLabel ? (
-          <p className="mt-1 text-[11px] text-muted-foreground">Source: {storm.sourceLabel}</p>
+          <p className="mt-1 text-[11px] text-muted-foreground">Kilde: {storm.sourceLabel}</p>
         ) : (
           <p className="mt-1 text-[11px] text-muted-foreground">Simulation</p>
         )}
 
         {approach && (
           <div className="bg-storm-gradient mt-4 rounded-2xl p-4 text-primary-foreground">
-            <p className="text-xs uppercase tracking-widest opacity-75">Relative to your area</p>
-            <p className="mt-1 text-2xl font-bold">{approach.distanceKm.toLocaleString()} km away</p>
+            <p className="text-xs uppercase tracking-widest opacity-75">I forhold til dit område</p>
+            <p className="mt-1 text-2xl font-bold">{approach.distanceKm.toLocaleString("da-DK")} km væk</p>
             {storm.forecast.length > 0 && (
               <p className="mt-1 text-sm opacity-85">
-                Closest forecast approach {approach.closestKm.toLocaleString()} km
-                {approach.closestAt ? ` on ${formatDateTime(approach.closestAt)}` : ""}
+                Forventet tætteste passage {approach.closestKm.toLocaleString("da-DK")} km
+                {approach.closestAt ? ` den ${formatDateTime(approach.closestAt)}` : ""}
               </p>
             )}
           </div>
@@ -135,16 +135,16 @@ export function StormSheet({
         {storm.active && (
           <>
             <h3 className="mt-6 text-sm font-semibold uppercase tracking-widest text-muted-foreground">
-              Conditions at the storm
+              Forhold ved stormen
             </h3>
             <div className="glass-card mt-3 flex items-center justify-between rounded-2xl p-4">
               {conditions.isLoading ? (
-                <p className="text-sm text-muted-foreground">Checking conditions…</p>
+                <p className="text-sm text-muted-foreground">Henter vejrforhold…</p>
               ) : conditions.data && !conditions.data.error ? (
                 <>
                   <div>
                     <p className="text-sm font-medium">
-                      {conditions.data.description ?? "Current conditions"}
+                      {conditions.data.description ?? "Aktuelle forhold"}
                     </p>
                     <p className="text-[11px] text-muted-foreground">
                       {conditions.data.place ?? coordLabel(storm.lat, storm.lon)}
@@ -158,7 +158,7 @@ export function StormSheet({
                         : "—"}
                     </p>
                     <p className="text-[11px] text-muted-foreground">
-                      gusts{" "}
+                       vindstød{" "}
                       {conditions.data.gustKph !== null
                         ? `${Math.round(conditions.data.gustKph)} km/h`
                         : "—"}
@@ -167,7 +167,7 @@ export function StormSheet({
                 </>
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  Live conditions for this position are unavailable.
+                  Aktuelle vejrforhold for denne position er ikke tilgængelige.
                 </p>
               )}
             </div>
@@ -175,7 +175,7 @@ export function StormSheet({
         )}
 
         <h3 className="mt-6 text-sm font-semibold uppercase tracking-widest text-muted-foreground">
-          Path so far
+          Hidtidig rute
         </h3>
         <ol className="mt-3 space-y-2">
           {storm.track
@@ -194,7 +194,7 @@ export function StormSheet({
         {storm.forecast.length > 0 && (
           <>
             <h3 className="mt-6 text-sm font-semibold uppercase tracking-widest text-muted-foreground">
-              Expected path
+               Forventet rute
             </h3>
             <ol className="mt-3 space-y-2">
               {storm.forecast.map((p) => (
@@ -215,7 +215,7 @@ export function StormSheet({
             }`}
           >
             <Star className={`size-4 ${tracked ? "fill-current" : ""}`} />
-            {tracked ? "Tracking this storm" : "Track & alert me"}
+             {tracked ? "Denne storm følges" : "Følg og advar mig"}
           </button>
         )}
       </div>
