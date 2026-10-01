@@ -30,17 +30,17 @@ import { useStormAlerts } from "@/hooks/useStormAlerts";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "StormWatch Denmark — Storm Tracker (School Demo)" },
+      { title: "StormWatch Danmark — Stormsporing" },
       {
         name: "description",
         content:
-          "Follow upcoming, active and passed storms around Denmark — from Lillebælt and Esbjerg to Aarhus, Aalborg, Odense and Copenhagen. A school-project demo with simulated storms.",
+          "Følg kommende, aktive og overståede storme omkring Danmark — fra Lillebælt og Esbjerg til Aarhus, Aalborg, Odense og København.",
       },
-      { property: "og:title", content: "StormWatch Denmark — Storm Tracker" },
+      { property: "og:title", content: "StormWatch Danmark — Stormsporing" },
       {
         property: "og:description",
         content:
-          "Storm positions, paths and affected areas around Denmark, with proximity alerts for your own area.",
+          "Stormpositioner, ruter og berørte områder i Danmark med advarsler for dit område.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -105,23 +105,23 @@ function Index() {
               <CloudLightning className="relative size-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-xl font-semibold tracking-tight">StormWatch Denmark</h1>
+              <h1 className="text-xl font-semibold tracking-tight">StormWatch Danmark</h1>
               <p className="text-[11px] text-muted-foreground">
-                {isFetching ? "Updating…" : `Updated ${formatDateTime(new Date(dataUpdatedAt || Date.now()).toISOString())}`}
+                {isFetching ? "Opdaterer…" : `Opdateret ${formatDateTime(new Date(dataUpdatedAt || Date.now()).toISOString())}`}
               </p>
             </div>
           </div>
           <div className="flex gap-2">
             <button
               onClick={() => refetch()}
-              aria-label="Refresh storm data"
+              aria-label="Opdater stormdata"
               className="rounded-full bg-secondary p-2.5 text-secondary-foreground"
             >
               <RefreshCw className={`size-4 ${isFetching ? "animate-spin" : ""}`} />
             </button>
             <button
               onClick={locate}
-              aria-label="Use my location"
+              aria-label="Brug min placering"
               className="rounded-full bg-secondary p-2.5 text-secondary-foreground"
             >
               {status === "locating" ? (
@@ -146,9 +146,9 @@ function Index() {
           >
             <Crosshair className="size-5 shrink-0 text-primary" />
             <span className="text-sm">
-              <span className="font-semibold">Set your area</span>
+              <span className="font-semibold">Angiv dit område</span>
               <span className="block text-muted-foreground">
-                See how far each storm is and get alerts when one closes in.
+                Se afstanden til hver storm, og få advarsler, når en storm nærmer sig.
               </span>
             </span>
           </button>
@@ -156,17 +156,17 @@ function Index() {
 
         {status === "denied" && !location && (
           <p className="mt-3 text-center text-xs text-muted-foreground">
-            Location access was blocked — enable it in your browser settings to get proximity alerts.
+            Adgang til placering blev blokeret — slå den til i browserens indstillinger for at få advarsler.
           </p>
         )}
 
         {nearest && nearestApproach && (
           <section className="bg-storm-gradient shadow-lift mt-5 rounded-[1.75rem] p-5 text-primary-foreground">
-            <p className="text-xs uppercase tracking-widest opacity-75">Closest to you</p>
+            <p className="text-xs uppercase tracking-widest opacity-75">Tættest på dig</p>
             <div className="mt-1 flex items-end justify-between">
               <h2 className="text-4xl font-bold tracking-tight">{nearest.name}</h2>
               <span className="text-sm font-medium opacity-85">
-                {nearestApproach.distanceKm.toLocaleString()} km
+                 {nearestApproach.distanceKm.toLocaleString("da-DK")} km
               </span>
             </div>
             <p className="mt-1 text-sm opacity-85">
@@ -175,7 +175,7 @@ function Index() {
             <div className="mt-4 grid grid-cols-3 gap-2">
               <div>
                 <p className="text-xl font-semibold">{ktToMs(nearest.windKt)}</p>
-                <p className="text-[11px] opacity-70">m/s winds</p>
+                <p className="text-[11px] opacity-70">m/s vind</p>
               </div>
               <div>
                 <p className="text-xl font-semibold">{nearest.pressure ?? "—"}</p>
@@ -183,9 +183,9 @@ function Index() {
               </div>
               <div>
                 <p className="text-xl font-semibold">
-                  {nearestApproach.closestKm.toLocaleString()}
+                   {nearestApproach.closestKm.toLocaleString("da-DK")}
                 </p>
-                <p className="text-[11px] opacity-70">km closest</p>
+                <p className="text-[11px] opacity-70">km tættest på</p>
               </div>
             </div>
           </section>
@@ -195,10 +195,10 @@ function Index() {
           <div className="glass-card mt-4 flex items-center justify-between rounded-2xl p-4">
             <div>
               <p className="text-xs uppercase tracking-widest text-muted-foreground">
-                {local.data.place ?? "Your area"}
+                {local.data.place ?? "Dit område"}
               </p>
               <p className="mt-0.5 text-sm font-medium">
-                {local.data.description ?? "Current conditions"}
+                {local.data.description ?? "Aktuelle forhold"}
               </p>
             </div>
             <div className="text-right">
@@ -206,7 +206,7 @@ function Index() {
                 {local.data.temperatureC !== null ? `${Math.round(local.data.temperatureC)}°` : "—"}
               </p>
               <p className="text-[11px] text-muted-foreground">
-                wind {local.data.windKph !== null ? `${Math.round(local.data.windKph / 3.6)} m/s` : "—"}
+                vind {local.data.windKph !== null ? `${Math.round(local.data.windKph / 3.6)} m/s` : "—"}
               </p>
             </div>
           </div>
@@ -223,12 +223,12 @@ function Index() {
           )}
           <span className="text-sm">
             <span className="font-semibold">
-              {permission === "granted" ? "Alerts are on" : "Turn on storm alerts"}
+              {permission === "granted" ? "Advarsler er slået til" : "Slå stormadvarsler til"}
             </span>
             <span className="block text-muted-foreground">
               {permission === "granted"
-                ? `${tracked.length} storm${tracked.length === 1 ? "" : "s"} tracked · alerts at 1500, 800, 400 and 150 km`
-                : "Get notified when a tracked storm closes in on your area."}
+                ? `${tracked.length} ${tracked.length === 1 ? "storm følges" : "storme følges"} · advarsler ved 1.500, 800, 400 og 150 km`
+                : "Få besked, når en storm, du følger, nærmer sig dit område."}
             </span>
           </span>
         </button>
@@ -259,7 +259,7 @@ function Index() {
                 tab === t ? "bg-primary text-primary-foreground" : "text-muted-foreground"
               }`}
             >
-              {t === "incoming" ? `Incoming (${incoming.length})` : `Past (${past.length})`}
+              {t === "incoming" ? `På vej (${incoming.length})` : `Overståede (${past.length})`}
             </button>
           ))}
         </div>
@@ -267,14 +267,14 @@ function Index() {
         <div className="mt-4 space-y-3">
           {isLoading && (
             <p className="glass-card rounded-2xl p-6 text-center text-sm text-muted-foreground">
-              Loading storms around Denmark…
+              Indlæser storme omkring Danmark…
             </p>
           )}
           {!isLoading && list.length === 0 && (
             <p className="glass-card rounded-2xl p-6 text-center text-sm text-muted-foreground">
               {tab === "incoming"
-                ? "No storms are on the way right now."
-                : "No past storms recorded yet."}
+                ? "Der er ingen storme på vej lige nu."
+                : "Der er endnu ikke registreret tidligere storme."}
             </p>
           )}
           {list.map((storm) => (
@@ -294,11 +294,11 @@ function Index() {
           className="mt-6 flex items-center justify-center gap-2 rounded-full bg-secondary py-3 text-sm font-semibold text-secondary-foreground"
         >
           <MapIcon className="size-4" />
-          Open the storm map
+          Åbn stormkortet
         </Link>
 
         <p className="mt-4 text-center text-[11px] text-muted-foreground">
-          School-project demo · storms around Denmark · some entries are simulated
+          Skoleprojekt · storme omkring Danmark · nogle hændelser er simulerede
         </p>
       </div>
 
