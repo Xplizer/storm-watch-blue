@@ -17,16 +17,16 @@ import { BandLegend } from "@/components/SeverityBand";
 export const Route = createFileRoute("/map")({
   head: () => ({
     meta: [
-      { title: "Storm Map Denmark — Paths & Affected Areas | StormWatch" },
+      { title: "Stormkort over Danmark — Ruter og berørte områder | StormWatch" },
       {
         name: "description",
         content:
-          "See storms around Denmark on one map, with the path travelled, the expected path and the areas they affect.",
+          "Se storme omkring Danmark på ét kort med deres hidtidige og forventede ruter samt berørte områder.",
       },
-      { property: "og:title", content: "Storm Map Denmark — Paths & Affected Areas" },
+      { property: "og:title", content: "Stormkort over Danmark — Ruter og berørte områder" },
       {
         property: "og:description",
-        content: "Storm positions, tracks and affected areas across Denmark on one map.",
+        content: "Stormpositioner, ruter og berørte områder i Danmark samlet på ét kort.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -65,15 +65,15 @@ function MapPage() {
       <div className="mx-auto flex min-h-screen max-w-md flex-col px-5 pb-32 pt-10">
         <header className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-semibold tracking-tight">Storm map · Denmark</h1>
+            <h1 className="text-xl font-semibold tracking-tight">Stormkort · Danmark</h1>
             <p className="text-xs text-muted-foreground">
-              {shown.length} storms ({activeCount} active) · solid line = path travelled, dotted =
-              expected path, circle = affected area
+              {shown.length} storme ({activeCount} aktive) · fuld linje = hidtidig rute, stiplet =
+              forventet rute, cirkel = berørt område
             </p>
           </div>
           <button
             onClick={locate}
-            aria-label="Center on my area"
+            aria-label="Centrer på mit område"
             className="rounded-full bg-secondary p-2.5 text-secondary-foreground"
           >
             {status === "locating" ? (
@@ -90,13 +90,13 @@ function MapPage() {
         >
           {isLoading ? (
             <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-              Loading storm tracks…
+              Indlæser stormruter…
             </div>
           ) : (
             <ClientOnly
               fallback={
                 <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-                  Preparing map…
+                  Klargør kort…
                 </div>
               }
             >
@@ -117,14 +117,14 @@ function MapPage() {
             <div className="flex items-center justify-between gap-2">
               <p className="flex items-center gap-1.5 text-sm font-semibold">
                 <Clock className="size-4 text-primary" />
-                {clampedTime === null ? "Slide through time" : formatDateTime(new Date(clampedTime).toISOString())}
+                {clampedTime === null ? "Bevæg dig gennem tiden" : formatDateTime(new Date(clampedTime).toISOString())}
               </p>
               {clampedTime !== null && (
                 <button
                   onClick={() => setTime(null)}
                   className="rounded-full bg-secondary px-3 py-1 text-[11px] font-semibold text-secondary-foreground"
                 >
-                  Show all
+                  Vis alle
                 </button>
               )}
             </div>
@@ -135,7 +135,7 @@ function MapPage() {
               step={HOUR}
               value={[clampedTime ?? minT]}
               onValueChange={([v]) => setTime(v ?? minT)}
-              aria-label="Time"
+              aria-label="Tid"
             />
             <div className="mt-2 flex justify-between text-[10px] text-muted-foreground">
               <span>{formatDateTime(new Date(minT).toISOString())}</span>
@@ -144,9 +144,9 @@ function MapPage() {
             <p className="mt-2 text-[11px] text-muted-foreground">
               {clampedTime === null
                 ? selected
-                  ? `Drag to watch ${selected.name} move along its path.`
-                  : "Drag to watch the storms move across Denmark."
-                : `${visibleAtTime} storm${visibleAtTime === 1 ? "" : "s"} on the map at this time`}
+                  ? `Træk for at se ${selected.name} bevæge sig langs sin rute.`
+                  : "Træk for at se stormene bevæge sig over Danmark."
+                : `${visibleAtTime} ${visibleAtTime === 1 ? "storm" : "storme"} på kortet på dette tidspunkt`}
             </p>
           </div>
         )}
@@ -189,18 +189,18 @@ function MapPage() {
           ))}
           {!isLoading && shown.length === 0 && (
             <p className="glass-card rounded-2xl p-4 text-center text-sm text-muted-foreground">
-              No storms to show right now.
+              Der er ingen storme at vise lige nu.
             </p>
           )}
           {selected && (
             <p className="pt-1 text-center text-[11px] text-muted-foreground">
-              {selected.name} is focused on the map — tap it again for full details
+              {selected.name} er markeret på kortet — tryk igen for at se alle detaljer
             </p>
           )}
         </div>
 
         <p className="mt-6 text-center text-[11px] text-muted-foreground">
-          School-project demo · colours show storm strength
+          Skoleprojekt · farverne viser stormstyrken
         </p>
       </div>
 

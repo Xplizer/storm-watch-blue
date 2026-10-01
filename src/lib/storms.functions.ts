@@ -15,7 +15,7 @@ export const getStorms = createServerFn({ method: "GET" }).handler(async (): Pro
     return {
       storms: [],
       fetchedAt: new Date().toISOString(),
-      error: "Storm data is temporarily unavailable.",
+      error: "Stormdata er midlertidigt utilgængelige.",
     };
   }
 });
@@ -53,7 +53,7 @@ export const getLocalConditions = createServerFn({ method: "POST" })
     const lovableKey = process.env['LOVABLE_API_KEY'];
     const mapsKey = process.env['GOOGLE_MAPS_API_KEY'];
     if (!lovableKey || !mapsKey) {
-      return { ...empty, error: "Local weather is not configured." };
+      return { ...empty, error: "Lokalt vejr er ikke konfigureret." };
     }
     const headers = {
       Authorization: `Bearer ${lovableKey}`,
@@ -62,11 +62,11 @@ export const getLocalConditions = createServerFn({ method: "POST" })
 
     const [weatherRes, geoRes] = await Promise.all([
       fetch(
-        `${GATEWAY}/weather/v1/currentConditions:lookup?location.latitude=${data.lat}&location.longitude=${data.lon}`,
+        `${GATEWAY}/weather/v1/currentConditions:lookup?location.latitude=${data.lat}&location.longitude=${data.lon}&languageCode=da`,
         { headers },
       ),
       fetch(
-        `${GATEWAY}/maps/api/geocode/json?latlng=${data.lat},${data.lon}&result_type=locality|administrative_area_level_1`,
+        `${GATEWAY}/maps/api/geocode/json?latlng=${data.lat},${data.lon}&result_type=locality|administrative_area_level_1&language=da`,
         { headers },
       ),
     ]);
@@ -74,7 +74,7 @@ export const getLocalConditions = createServerFn({ method: "POST" })
     if (!weatherRes.ok) {
       const body = await weatherRes.text();
       console.error(`Weather lookup failed [${weatherRes.status}]: ${body}`);
-      return { ...empty, error: `Local weather unavailable (${weatherRes.status}).` };
+      return { ...empty, error: `Lokalt vejr er utilgængeligt (${weatherRes.status}).` };
     }
 
     const w = (await weatherRes.json()) as Record<string, any>;

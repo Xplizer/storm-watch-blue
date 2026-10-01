@@ -41,13 +41,13 @@ export function useStormAlerts(
   const requestPermission = useCallback(async () => {
     if (!("Notification" in window)) return "unsupported" as const;
     if (window.top !== window.self) {
-      toast.info("Open the app in its own tab to enable notifications.");
+      toast.info("Åbn appen i sin egen fane for at slå notifikationer til.");
       return "blocked" as const;
     }
     const result = await Notification.requestPermission();
     setPermission(result);
     if (result === "denied") {
-      toast.error("Notifications are blocked. Enable them in your browser site settings.");
+      toast.error("Notifikationer er blokeret. Slå dem til i browserens indstillinger for siden.");
     }
     return result;
   }, []);
@@ -69,11 +69,11 @@ export function useStormAlerts(
         fresh.push({
           id: key,
           stormId: storm.id,
-          title: `${storm.name} is ${inside ? "within" : "expected within"} ${ring} km`,
+          title: `${storm.name} er ${inside ? "inden for" : "forventet inden for"} ${ring} km`,
           body:
             (inside
-              ? `${storm.category} · ${ktToMs(storm.windKt)} m/s · ${distanceKm} km from your area.`
-              : `Closest approach ${closestKm} km${closestAt ? ` around ${new Date(closestAt).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}` : ""}.`) +
+              ? `${storm.category} · ${ktToMs(storm.windKt)} m/s · ${distanceKm} km fra dit område.`
+              : `Tætteste passage ${closestKm} km${closestAt ? ` omkring ${new Date(closestAt).toLocaleString("da-DK", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}` : ""}.`) +
             (storm.simulated ? " Simulation." : ""),
           at: new Date().toISOString(),
         });

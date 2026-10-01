@@ -9,7 +9,7 @@ export function WaterLevelCard({ storm }: { storm: Storm }) {
   return (
     <>
       <h3 className="mt-6 text-sm font-semibold uppercase tracking-widest text-muted-foreground">
-        Water level & flood risk
+        Vandstand og oversvømmelsesrisiko
       </h3>
       <div className="glass-card mt-3 rounded-2xl p-4">
         {w ? (
@@ -32,11 +32,11 @@ export function WaterLevelCard({ storm }: { storm: Storm }) {
               ))}
             </div>
             <p className="mt-3 text-[12px] text-muted-foreground">
-              Highest water above normal expected at {w.places}.
+              Højeste forventede vandstand over normalen ved {w.places}.
             </p>
           </>
         ) : (
-          <p className="text-sm text-muted-foreground">No water level data available for this storm.</p>
+          <p className="text-sm text-muted-foreground">Der er ingen vandstandsdata for denne storm.</p>
         )}
       </div>
     </>
@@ -49,25 +49,25 @@ function tipsFor(storm: Storm): string[] {
   const flood = storm.water && RISK_LEVEL[storm.water.floodRisk] >= 3;
   if (storm.phase === "passed") {
     return [
-      "Stay away from fallen trees and downed power lines.",
-      "Check your home for damage and photograph it for insurance.",
-      "Avoid flooded roads and coastal paths until the water drops.",
-      "Check in on neighbours, especially elderly people.",
+      "Hold afstand til væltede træer og nedfaldne elledninger.",
+      "Tjek dit hjem for skader, og tag billeder til forsikringen.",
+      "Undgå oversvømmede veje og kyststier, indtil vandet falder.",
+      "Se til dine naboer, især ældre personer.",
     ];
   }
   const tips = [
-    "Bring in or tie down garden furniture, trampolines and bins.",
-    "Charge your phone and power banks; keep a torch ready.",
-    "Keep water, food and medicine for at least 3 days.",
-    "Follow updates from DMI and the police.",
+    "Tag havemøbler, trampoliner og skraldespande ind, eller bind dem fast.",
+    "Oplad din telefon og powerbanks, og hav en lommelygte klar.",
+    "Hav vand, mad og medicin til mindst tre dage.",
+    "Følg opdateringer fra DMI og politiet.",
   ];
   if (severe) {
-    tips.push("Avoid travelling — bridges like Storebælt and Lillebælt may close.");
-    tips.push("Stay indoors and away from windows during the strongest winds.");
+    tips.push("Undgå at rejse — broer som Storebælt og Lillebælt kan lukke.");
+    tips.push("Bliv indenfor og hold afstand til vinduer under den kraftigste vind.");
   }
   if (flood) {
-    tips.push("Move valuables up from basements and ground floors.");
-    tips.push("Keep away from harbours, piers and beaches.");
+    tips.push("Flyt værdigenstande op fra kældre og stueetager.");
+    tips.push("Hold afstand til havne, moler og strande.");
   }
   return tips;
 }
@@ -76,7 +76,7 @@ export function StormPreparation({ storm }: { storm: Storm }) {
   return (
     <>
       <h3 className="mt-6 text-sm font-semibold uppercase tracking-widest text-muted-foreground">
-        {storm.phase === "passed" ? "After the storm" : "How to prepare"}
+        {storm.phase === "passed" ? "Efter stormen" : "Sådan forbereder du dig"}
       </h3>
       <ul className="glass-card mt-3 space-y-2.5 rounded-2xl p-4">
         {tipsFor(storm).map((tip) => (

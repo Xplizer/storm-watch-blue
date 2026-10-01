@@ -16,16 +16,16 @@ export type Band = {
 export const BANDS: Record<BandKey, Band> = {
   strong: {
     key: "strong",
-    label: "Strong wind",
-    short: "Strong wind",
+    label: "Kraftig vind",
+    short: "Kraftig vind",
     cssVar: "var(--band-post)",
     hex: "#8fa3bd",
     description: "Under 17 m/s",
   },
   gale: {
     key: "gale",
-    label: "Gale",
-    short: "Gale",
+    label: "Hård kuling",
+    short: "Hård kuling",
     cssVar: "var(--band-depression)",
     hex: "#7fd3f7",
     description: "17.2–24.4 m/s",
@@ -40,19 +40,19 @@ export const BANDS: Record<BandKey, Band> = {
   },
   violent: {
     key: "violent",
-    label: "Violent storm",
-    short: "Violent",
+    label: "Stærk storm",
+    short: "Stærk storm",
     cssVar: "var(--band-hurricane)",
     hex: "#f0b03c",
     description: "28.5–32.6 m/s",
   },
   hurricane: {
     key: "hurricane",
-    label: "Hurricane force",
-    short: "Hurricane force",
+    label: "Orkan",
+    short: "Orkan",
     cssVar: "var(--band-major)",
     hex: "#e8483f",
-    description: "32.7 m/s and above",
+    description: "32,7 m/s og derover",
   },
 };
 
