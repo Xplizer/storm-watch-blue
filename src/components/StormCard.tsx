@@ -49,7 +49,7 @@ export function StormCard({
             <span className="text-3xl font-bold leading-none" style={{ color: band.cssVar }}>
               {ktToMs(storm.windKt)}
             </span>
-            <span className="text-[11px] text-muted-foreground">m/s winds</span>
+            <span className="text-[11px] text-muted-foreground">m/s vind</span>
           </div>
         </div>
 
@@ -57,7 +57,7 @@ export function StormCard({
           <MapPin className="size-3.5 shrink-0" />
           {storm.basinName}
         </div>
-        <p className="mt-1 text-xs text-muted-foreground">Affected: {storm.affectedAreas}</p>
+        <p className="mt-1 text-xs text-muted-foreground">Berørte områder: {storm.affectedAreas}</p>
 
         <div className="mt-4 flex items-center gap-3">
           <div className="flex-1">
@@ -70,7 +70,7 @@ export function StormCard({
               <>
                 <Clock className="size-3.5 text-primary" />
                 {approach
-                  ? `${approach.distanceKm.toLocaleString()} km away`
+                  ? `${approach.distanceKm.toLocaleString("da-DK")} km væk`
                   : formatDateTime(storm.phase === "upcoming" ? storm.startedAt : storm.updatedAt)}
               </>
             )}
@@ -86,7 +86,7 @@ export function StormCard({
           }`}
         >
           <Star className={`size-3.5 ${tracked ? "fill-current" : ""}`} />
-          {tracked ? "Tracking — alerts on" : "Track & alert me"}
+          {tracked ? "Følges — advarsler er slået til" : "Følg og advar mig"}
         </button>
       )}
     </div>

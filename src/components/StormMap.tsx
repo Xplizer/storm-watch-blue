@@ -182,7 +182,7 @@ export function StormMap({
         new g.Marker({
           position: { lat: me.lat, lng: me.lon },
           map,
-          title: "Your area",
+          title: "Dit område",
           icon: {
             path: g.SymbolPath.CIRCLE,
             scale: 7,
@@ -212,7 +212,7 @@ export function StormMap({
   if (error) {
     return (
       <div className="glass-card flex h-full items-center justify-center rounded-3xl p-6 text-center text-sm text-muted-foreground">
-        The storm map could not load right now.
+        Stormkortet kunne ikke indlæses lige nu.
       </div>
     );
   }

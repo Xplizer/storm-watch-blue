@@ -49,9 +49,9 @@ export type StormAdvisory = {
 };
 
 export const BASIN_NAMES: Record<string, string> = {
-  AL: "Atlantic",
-  EP: "Eastern Pacific",
-  CP: "Central Pacific",
+  AL: "Atlanterhavet",
+  EP: "Det østlige Stillehav",
+  CP: "Det centrale Stillehav",
 };
 
 export function ktToKph(kt: number) {
@@ -63,19 +63,19 @@ export function ktToMs(kt: number) {
 }
 
 export function phaseLabel(phase: Storm["phase"]) {
-  if (phase === "upcoming") return "Upcoming";
-  if (phase === "active") return "Active";
-  return "Passed";
+  if (phase === "upcoming") return "På vej";
+  if (phase === "active") return "Aktiv";
+  return "Overstået";
 }
 
 export function classify(status: string, windKt: number): string {
   const ms = windKt * 0.514444;
-  if (status === "ENDED") return "Passed storm";
-  if (ms >= 32.7) return "Hurricane-force storm";
-  if (ms >= 28.5) return "Violent storm";
+  if (status === "ENDED") return "Overstået storm";
+  if (ms >= 32.7) return "Orkan";
+  if (ms >= 28.5) return "Stærk storm";
   if (ms >= 24.5) return "Storm";
-  if (ms >= 17.2) return "Gale";
-  return "Strong wind";
+  if (ms >= 17.2) return "Hård kuling";
+  return "Kraftig vind";
 }
 
 /** 1-5 visual severity from sustained wind (knots). */
@@ -124,7 +124,7 @@ export function approachToPoint(storm: Storm, me: { lat: number; lon: number }):
 }
 
 export function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-GB", {
+  return new Date(iso).toLocaleDateString("da-DK", {
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -132,7 +132,7 @@ export function formatDate(iso: string) {
 }
 
 export function formatDateTime(iso: string) {
-  return new Date(iso).toLocaleString("en-GB", {
+  return new Date(iso).toLocaleString("da-DK", {
     day: "numeric",
     month: "short",
     hour: "2-digit",
@@ -141,22 +141,22 @@ export function formatDateTime(iso: string) {
 }
 
 export function coordLabel(lat: number, lon: number) {
-  return `${Math.abs(lat).toFixed(1)}°${lat >= 0 ? "N" : "S"}, ${Math.abs(lon).toFixed(1)}°${lon >= 0 ? "E" : "W"}`;
+  return `${Math.abs(lat).toFixed(1)}°${lat >= 0 ? "N" : "S"}, ${Math.abs(lon).toFixed(1)}°${lon >= 0 ? "Ø" : "V"}`;
 }
 
 export function compass(deg: number | null) {
   if (deg === null) return "—";
-  const dirs = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
+  const dirs = ["N", "NNØ", "NØ", "ØNØ", "Ø", "ØSØ", "SØ", "SSØ", "S", "SSV", "SV", "VSV", "V", "VNV", "NV", "NNV"];
   return dirs[Math.round(deg / 22.5) % 16]!;
 }
 
 export type FloodRisk = "low" | "moderate" | "high" | "severe";
 
 export const FLOOD_LABEL: Record<FloodRisk, string> = {
-  low: "Low flood risk",
-  moderate: "Moderate flood risk",
-  high: "High flood risk",
-  severe: "Severe flood risk",
+  low: "Lav risiko for oversvømmelse",
+  moderate: "Moderat risiko for oversvømmelse",
+  high: "Høj risiko for oversvømmelse",
+  severe: "Meget høj risiko for oversvømmelse",
 };
 
 /** All timed points of a storm (track then forecast). */

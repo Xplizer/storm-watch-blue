@@ -15,7 +15,7 @@ export function BottomNav() {
           inactiveProps={{ className: `${base} text-muted-foreground` }}
         >
           <CloudLightning className="size-5" />
-          Tracker
+          Storme
         </Link>
         <Link
           to="/map"
@@ -24,7 +24,7 @@ export function BottomNav() {
           inactiveProps={{ className: `${base} text-muted-foreground` }}
         >
           <Map className="size-5" />
-          Map
+          Kort
         </Link>
       </div>
     </nav>
